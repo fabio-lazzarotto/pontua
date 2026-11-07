@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#ffffff">
+<title>Pontua | Eventos e ranking</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%23171717%27%2F%3E%3Cg%20transform%3D%27translate(8.5%206)%20scale(.73)%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M15%206h34a7%207%200%200%201%207%207v17a6%206%200%200%200%200%2012v17a7%207%200%200%201-7%207H15a7%207%200%200%201-7-7V42a6%206%200%200%200%200-12V13a7%207%200%200%201%207-7z%27%2F%3E%3Cpath%20d%3D%27M21%2037l8%208%2015-17%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#ffffff;--side:#fafafa;--hover:#f5f5f5;--line:#e8e8e8;--line2:#d4d4d4;
+  --ink:#171717;--body:#2b2b2b;--muted:#707070;--primary:#171717;
+  --ok:#1a7f4b;--bad:#c0362c;--maybe:#a8700f;--wait:#8c8c8c;--focus:#2563eb;
+  --chat:#efeae2;--in:#ffffff;--out:#d9fdd3;--wa:#008069;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;box-sizing:border-box;
+}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--body);font:14px/1.5 var(--sans);min-height:100dvh;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:#fff;padding:6px 12px;border-radius:6px;z-index:60}
+.skip:focus{left:12px}
+
+/* estrutura */
+.shell{display:grid;grid-template-columns:208px minmax(0,1fr);min-height:100dvh}
+.shell.dock-open{grid-template-columns:208px minmax(0,1fr) 372px}
+.rail{position:sticky;top:0;height:100dvh;border-right:1px solid var(--line);background:var(--side);padding:14px 10px;display:flex;flex-direction:column;gap:14px}
+.brand{padding:4px 8px;font-weight:600;color:var(--ink);font-size:14px}
+.nav{display:flex;flex-direction:column;gap:1px}
+.nav button{display:flex;align-items:center;gap:9px;height:32px;padding:0 8px;border:0;border-radius:6px;background:none;color:var(--muted);font-weight:500;font-size:13.5px;text-align:left}
+.nav button:hover{background:#efefef;color:var(--ink)}
+.nav button[aria-current="page"]{background:#ececec;color:var(--ink)}
+.nav svg{width:16px;height:16px}
+.rail-foot{margin-top:auto;padding:0 8px;font-size:12px;color:var(--muted);line-height:1.45}
+.main{min-width:0}
+.bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;height:48px;padding:0 32px;border-bottom:1px solid var(--line);background:var(--bg)}
+main{padding:24px 32px 64px}
+.wrap{max-width:1040px}
+
+/* texto */
+h1,h2,h3{color:var(--ink);margin:0}
+h1{font-size:20px;font-weight:600;line-height:1.3;letter-spacing:-.01em}
+h2{font-size:14px;font-weight:600;line-height:1.4}
+.eyebrow{font-size:13px;color:var(--muted)}
+.lead{color:var(--muted);margin:4px 0 0;max-width:70ch}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.stack>*+*{margin-top:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+
+/* componentes */
+.card{border:1px solid var(--line);border-radius:8px;padding:16px 18px;background:var(--bg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border:1px solid var(--line2);border-radius:6px;background:var(--bg);color:var(--ink);font-weight:500;font-size:13.5px;line-height:1;white-space:nowrap}
+.btn:hover:not(:disabled){background:var(--hover)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.primary:hover:not(:disabled){background:#333}
+.btn.quiet{border-color:transparent;color:var(--muted)}
+.btn.quiet:hover:not(:disabled){color:var(--ink)}
+.btn.danger{border-color:transparent;color:var(--bad)}
+.btn.danger:hover:not(:disabled){background:#fdf1f0}
+.btn.sm{height:28px;padding:0 10px;font-size:13px}
+.btn[aria-pressed="true"]{background:#ececec}
+.btn svg{width:15px;height:15px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.link{background:none;border:0;padding:0;color:var(--ink);font-weight:500;text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:3px}
+.link:hover{text-decoration-color:var(--ink)}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;color:var(--body)}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+.badge .dot{display:none}
+.b-ok::before{background:var(--ok)}
+.b-bad::before{background:var(--bad)}
+.b-maybe::before{background:var(--maybe)}
+.b-wait::before{background:var(--line2)}
+.b-info::before{background:var(--ink)}
+.b-wait{color:var(--muted)}
+.niv{font-size:13px;color:var(--muted)}
+.av{display:none}
+.cellp b,.list b{font-weight:500;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line2);background:var(--bg);color:var(--body);border-radius:6px;padding:3px 10px;font-size:13px}
+.chip:hover{background:var(--hover)}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.empty{color:var(--muted);padding:24px 0;margin:0}
+
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12.5px;color:var(--muted);font-weight:500;background:var(--side)}
+tr:last-child td{border-bottom:0}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.clk{cursor:pointer}
+tr.clk:hover td{background:var(--hover)}
+.pos-cell{width:84px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pts{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.mv{font-size:12px;margin-left:6px;white-space:nowrap}
+.mv.up{color:var(--ok)}
+.mv.down{color:var(--bad)}
+.p{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:500}
+.p.pos{color:var(--ok)}
+.p.neg{color:var(--bad)}
+
+/* painel */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:8px;margin-bottom:16px}
+.kpi{padding:14px 18px;border-left:1px solid var(--line)}
+.kpi:first-child{border-left:0}
+.kpi span{display:block;font-size:13px;color:var(--muted)}
+.kpi b{display:block;font-size:22px;font-weight:600;color:var(--ink);line-height:1.3;font-variant-numeric:tabular-nums}
+.next h2{font-size:17px;margin:2px 0}
+.todo{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--line)}
+.todo li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.todo li:last-child{border-bottom:0;padding-bottom:0}
+.todo b{font-weight:600;color:var(--ink)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;align-items:start}
+.list{list-style:none;margin:10px 0 0;padding:0}
+.list li{display:flex;align-items:baseline;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.list li>div{flex:1;min-width:0}
+.list small{display:block;color:var(--muted);font-size:12.5px}
+.list .rk{color:var(--muted);width:18px;font-variant-numeric:tabular-nums}
+
+/* respostas */
+.fbar{display:flex;gap:2px;height:6px;margin:14px 0 10px}
+.fbar i{display:block;height:100%;border-radius:1px;min-width:2px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:13px}
+.legend span{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.legend i{width:8px;height:8px;border-radius:2px}
+.legend b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* eventos */
+.ev-list{border:1px solid var(--line);border-radius:8px}
+.ev{display:grid;grid-template-columns:96px 1fr 200px 150px;gap:16px;align-items:center;width:100%;text-align:left;padding:12px 14px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--body)}
+.ev:last-child{border-bottom:0}
+.ev:hover{background:var(--hover)}
+.ev .d{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+.ev .d b{font-weight:500}
+.ev .name{font-weight:500;color:var(--ink)}
+.ev .meta{font-size:13px;color:var(--muted)}
+.ev .fbar{margin:0 0 4px;height:4px}
+.steps{list-style:none;margin:0 0 16px;padding:0;display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:8px}
+.steps li{padding:10px 14px;border-left:1px solid var(--line);color:var(--muted)}
+.steps li:first-child{border-left:0}
+.steps li .n{display:none}
+.steps li b{display:block;font-weight:500;font-size:13.5px}
+.steps li small{font-size:13px}
+.steps li.done b::after{content:" (feito)";font-weight:400;color:var(--muted)}
+.steps li.done b,.steps li.now b{color:var(--ink)}
+.steps li.now{box-shadow:inset 0 2px 0 var(--ink)}
+.ev-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:stretch}
+.ci{display:flex;gap:16px;align-items:center}
+.qr{flex:none;background:#fff;padding:6px;border:1px solid var(--line);border-radius:6px;line-height:0}
+.qr img,.qr canvas{display:block}
+.code{font-family:ui-monospace,Consolas,monospace;font-size:15px;font-weight:600;color:var(--ink)}
+.demo{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:8px 12px;border:1px dashed var(--line2);border-radius:8px;background:var(--side)}
+
+/* formulario */
+.form-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:start}
+.form-grid>.stack:last-child{position:sticky;top:64px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field.full{grid-column:1/-1}
+.field label{font-size:13px;font-weight:500;color:var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=time],input[type=search],input[type=tel],textarea,select{border:1px solid var(--line2);background:var(--bg);color:var(--ink);border-radius:6px;padding:5px 10px;width:100%;min-height:32px}
+input::placeholder,textarea::placeholder{color:#a0a0a0}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--focus);outline-offset:-1px}
+textarea{resize:vertical;min-height:70px}
+.recips{max-height:300px;overflow-y:auto;border:1px solid var(--line);border-radius:6px}
+.recip{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--line);cursor:pointer;color:var(--ink)}
+.recip:last-child{border-bottom:0}
+.recip:hover{background:var(--hover)}
+.recip.off{opacity:.55;cursor:not-allowed}
+.recip input{width:15px;height:15px;accent-color:var(--ink)}
+.recip .rn{flex:1;min-width:0}
+select.inl{width:auto;min-height:28px;padding:2px 8px;font-size:13px}
+label.row{flex-wrap:nowrap;align-items:flex-start}
+label.row input[type=checkbox]{flex:none;width:15px;height:15px;margin:3px 0 0}
+.err{color:var(--bad);margin:0 0 8px}
+.err:empty{display:none}
+
+/* simulador: imita o WhatsApp de verdade */
+.dock{position:sticky;top:0;height:100dvh;border-left:1px solid var(--line);background:var(--side);padding:10px 14px 14px;display:flex;flex-direction:column;gap:10px;z-index:8}
+.phone{flex:1;min-height:0;border:1px solid var(--line2);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;background:var(--chat)}
+.phone-head{background:var(--wa);color:#fff;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.phone-head b{font-weight:600;color:#fff}
+.phone-head .muted{color:rgba(255,255,255,.8)}
+.phone-head .badge{color:#fff}
+.phone-head .badge::before{display:none}
+.msgs{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:6px}
+.msg{max-width:88%;padding:6px 9px;border-radius:8px;white-space:pre-wrap;font-size:13.5px;line-height:1.4;color:#111b21;box-shadow:0 1px .5px rgba(11,20,26,.13)}
+.msg .mi{display:block;width:100%;border-radius:6px;margin-bottom:6px}
+.artes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.arte{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:6px;padding:10px}
+.arte .th{flex:none;width:64px;height:64px;border-radius:4px;border:1px dashed var(--line2);background:var(--side);object-fit:cover}
+.arte img.th{border-style:solid}
+.arte b{display:block;font-weight:500;color:var(--ink);font-size:13.5px}
+.arte .small{display:block;margin-bottom:6px;line-height:1.35}
+.msg.bot{background:var(--in);align-self:flex-start;border-top-left-radius:0}
+.msg.user{background:var(--out);align-self:flex-end;border-top-right-radius:0}
+.msg .btns{display:flex;flex-direction:column;margin:6px -9px -6px;border-top:1px solid #e9edef}
+.msg .btns button{background:none;border:0;border-bottom:1px solid #e9edef;padding:8px;color:#027eb5;font-weight:500}
+.msg .btns button:hover:not(:disabled){background:#f5f6f6}
+.msg .btns button:last-child{border-bottom:0}
+.msg .btns button:disabled{color:#8696a0;cursor:default}
+.composer{background:#f0f2f5;padding:8px 10px 10px}
+.composer form{display:flex;gap:6px}
+.composer input{flex:1;border-radius:18px;border-color:transparent}
+.composer .btn{border-radius:18px;background:var(--wa);border-color:var(--wa);color:#fff;height:32px}
+.quick{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
+.quick .chip{font-size:12px;padding:2px 8px;border-radius:12px}
+
+/* gaveta e telao */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--bg);z-index:21;padding:16px 20px 24px;overflow-y:auto;border-left:1px solid var(--line2);box-shadow:-8px 0 24px rgba(0,0,0,.08)}
+.drawer h1{margin:4px 0 2px}
+.mini{display:grid;grid-template-columns:repeat(4,1fr);margin:16px 0;border:1px solid var(--line);border-radius:8px}
+.mini div{padding:10px 12px;border-left:1px solid var(--line)}
+.mini div:first-child{border-left:0}
+.mini b{display:block;font-size:18px;font-weight:600;color:var(--ink);line-height:1.3}
+.mini span{font-size:12px;color:var(--muted);line-height:1.3;display:block}
+.telao{position:fixed;inset:0;z-index:40;background:#fff;display:grid;grid-template-columns:auto 1fr;gap:6vw;align-items:center;padding:48px 7vw;overflow-y:auto}
+.telao .x{position:absolute;top:14px;right:18px}
+.telao h1{font-size:clamp(28px,3.4vw,48px);line-height:1.15;margin:0 0 14px;letter-spacing:-.02em}
+.telao .qr{padding:14px;border-radius:12px}
+.telao .code{font-size:clamp(20px,2.2vw,30px)}
+.telao .cnt{display:flex;align-items:baseline;gap:12px;margin:28px 0 16px}
+.telao .cnt b{font-size:clamp(64px,8vw,120px);font-weight:600;line-height:1;color:var(--ink);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.telao .cnt span{font-size:18px;color:var(--muted)}
+.telao .list{max-width:440px}
+.telao .list li{font-size:16px;color:var(--ink)}
+
+.rules{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
+.rules table{min-width:0;margin-top:6px}
+.rules td{padding-left:0;padding-right:0}
+.rules p{margin:0;max-width:68ch}
+.rules p+p{margin-top:8px}
+.note{margin:10px 0 0;color:var(--muted);font-size:13px}
+.cmd{font-family:ui-monospace,Consolas,monospace;font-size:13px;color:var(--ink);white-space:nowrap;padding-right:16px!important}
+
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 14px;border-radius:6px;z-index:50;font-size:13.5px;max-width:calc(100% - 32px)}
+.toast[hidden]{display:none}
+
+/* entrada */
+.brand{display:flex;align-items:center;gap:8px}
+.brand svg{width:15px;height:17px;flex:none}
+.login{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);min-height:100dvh}
+.login-side{position:relative;overflow:hidden;background:#111;color:#fff;padding:36px 44px;display:flex;flex-direction:column;justify-content:space-between;gap:32px}
+.login-brand{position:relative;display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px}
+.login-brand svg{width:20px;height:23px}
+.login-mark{position:absolute;right:-120px;top:50%;width:min(540px,66vh);transform:translateY(-50%);color:rgba(255,255,255,.14);pointer-events:none}
+.login-mark,.login-brand svg{transition:color .25s}
+.login-side.bad .login-mark,.login-side.bad .login-brand svg{color:#e5484d}
+.login-side.ok .login-mark,.login-side.ok .login-brand svg{color:#3dd68c}
+.login-facts{position:relative;max-width:42ch}
+.login-facts h2{color:#fff;font-size:14px;margin-bottom:10px}
+.login-facts ul{list-style:none;margin:0;padding:0;font-size:13.5px;color:rgba(255,255,255,.7)}
+.login-facts li{padding:10px 0;border-top:1px solid rgba(255,255,255,.16)}
+.login-facts b{display:block;color:#fff;font-weight:500}
+.login-main{min-width:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:32px 24px}
+.login-box{width:100%;max-width:340px}
+.login-box h1{font-size:22px}
+.login-box .lead{margin:6px 0 24px}
+.login-box .field{margin-bottom:14px}
+.login-box input{border:1px solid var(--line2);background:var(--bg);color:var(--ink);border-radius:6px;padding:8px 12px;width:100%;height:40px}
+.login-box .btn{width:100%;height:40px;margin-top:6px}
+.login-box .btn.quiet{margin-top:4px}
+.otp-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px}
+.login-box .otp{text-align:center;font-size:20px;font-weight:600;height:52px;padding:0;font-variant-numeric:tabular-nums}
+.login-note{margin:28px 0 0;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+@media (max-width:820px){
+  .login{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .login-side{padding:18px 20px}
+  .login-mark,.login-facts{display:none}
+}
+
+@media (max-width:1180px){
+  .shell.dock-open{grid-template-columns:208px minmax(0,1fr)}
+  .dock{position:fixed;top:0;right:0;bottom:0;width:min(372px,100%);z-index:30;box-shadow:-8px 0 24px rgba(0,0,0,.12)}
+}
+@media (max-width:900px){
+  .cols,.ev-grid,.form-grid,.rules{grid-template-columns:1fr}
+  .form-grid>.stack:last-child{position:static}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpi:nth-child(3){border-left:0}
+  .kpi:nth-child(n+3){border-top:1px solid var(--line)}
+  .ev{grid-template-columns:88px 1fr auto}
+  .ev .ev-bar{display:none}
+  .telao{grid-template-columns:1fr;gap:24px;padding:56px 20px 32px}
+}
+@media (max-width:720px){
+  .shell,.shell.dock-open{grid-template-columns:1fr}
+  .rail{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;z-index:15;flex-direction:row;padding:4px 6px calc(4px + env(safe-area-inset-bottom,0px));border-right:0;border-top:1px solid var(--line)}
+  .rail .brand,.rail-foot{display:none}
+  .nav{flex-direction:row;flex:1;justify-content:space-around}
+  .nav button{flex-direction:column;gap:2px;height:44px;padding:0 6px;font-size:11px;justify-content:center}
+  .bar{padding:0 16px}
+  main{padding:16px 16px 88px}
+  .steps{grid-template-columns:1fr 1fr}
+  .steps li:nth-child(3){border-left:0}
+  .steps li:nth-child(n+3){border-top:1px solid var(--line)}
+  .fields,.artes{grid-template-columns:1fr}
+  .ci{flex-direction:column;align-items:flex-start}
+  .mini{grid-template-columns:1fr 1fr}
+  .mini div:nth-child(3){border-left:0}
+  .mini div:nth-child(n+3){border-top:1px solid var(--line)}
+}
+@media (prefers-reduced-motion:no-preference){
+  .drawer{animation:slide .16s ease-out}
+  @keyframes slide{from{transform:translateX(16px);opacity:0}to{transform:none;opacity:1}}
+  .login-mark.draw path{stroke-dasharray:1;animation:traco 1.5s cubic-bezier(.4,0,.2,1) both}
+  .login-mark.draw path+path{animation-delay:.5s}
+  .login-side.bad .login-mark.draw path,.login-side.ok .login-mark.draw path{animation-duration:.7s}
+  .login-side.bad .login-mark.draw path+path,.login-side.ok .login-mark.draw path+path{animation-delay:.25s}
+  @keyframes traco{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const PTS={resposta:5,checkin:50,bonus:20,falta:-20};
+const KEY='pontua-mvp-v1';
+const CFG0=()=>({pts:{resposta:5,checkin:50,bonus:20,falta:-20},prazo:24,
+  niv:[{n:'Conselho',min:150,ben:'Convite para o jantar anual da comunidade'},{n:'Titular',min:80,ben:'Recebe os convites um dia antes'},{n:'Associado',min:0,ben:''}],
+  extras:[{nome:'Palestrou em um evento',pts:100},{nome:'Indicou um novo membro',pts:30},{nome:'Levou um convidado',pts:15}],
+  temporada:'semestre',ci:{antes:60,depois:120},qrRot:true,lembrete:{ativo:true,horas:24},pos:true,custo:0.35,
+  msg:{pos:'Obrigado por participar do {evento}, {nome}. Você ganhou {pontos_evento} pontos neste evento e está em {posicao}º lugar na temporada.',
+    falta:'{nome}, você confirmou presença no {evento} e não compareceu. Foram descontados {pontos_falta} pontos.',
+convite:'Olá, {nome}! Você está convidado para o {evento}.\n\nData: {data} às {hora}\nLocal: {local}\n\n{descricao}\n\nVocê vai? Responder vale {pontos_resposta} pontos e o check-in no dia vale {pontos_checkin}.',
+    cobranca:'{nome}, ainda não recebemos sua resposta para o {evento}, em {data} às {hora}. Você vai? Responder vale {pontos_resposta} pontos.',
+    lembrete:'Lembrete: o {evento} é em {data} às {hora}, {local}.'}});
+const WHATS='5511900000000';
+const RESP={'Vou':'confirmado','Não vou':'recusado','Talvez':'talvez'};
+const ST={pendente:['Sem resposta','b-wait'],confirmado:['Vai','b-ok'],espera:['Lista de espera','b-fila'],recusado:['Não vai','b-bad'],talvez:['Talvez','b-maybe']};
+const SEG=[['confirmado','var(--ok)','Vão'],['espera','var(--fila)','Lista de espera'],['talvez','var(--maybe)','Talvez'],['recusado','var(--bad)','Não vão'],['pendente','var(--line2)','Sem resposta']];
+const NIV=[[150,'Conselho','n3'],[80,'Titular','n2'],[0,'Associado','n1']];
+const DIA=86400000;
+
+let S=null;
+const VIEW0=()=>({tab:'painel',eventId:null,novo:false,chatMember:null,drawer:null,addMember:false,buscaMembro:'',dock:false,telao:null,filtro:'todos',rkTag:'Todos',editMember:false,editEvent:false,addUser:false,rkPer:'temp',importRes:null});
+let view=VIEW0();
+let draft=null;
+let viewKey='',dockWas=false;
+
+/* utilidades */
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const uid=()=>Math.random().toString(36).slice(2,10);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().trim().replace(/\s+/g,' ');
+const fmtData=d=>{if(!d)return'';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0]};
+const fmtCurta=d=>{const p=d.split('-');return p[2]+'/'+p[1]};
+const MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const primeiro=n=>n.split(' ')[0];
+const iniciais=n=>{const p=String(n).trim().split(/\s+/);return((p[0][0]||'')+(p.length>1?p[p.length-1][0]:'')).toUpperCase()};
+const member=id=>S.members.find(m=>m.id===id);
+const evento=id=>S.events.find(e=>e.id===id);
+const nivel=p=>NIV.find(n=>p>=n[0])||NIV[2];
+const iso=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const diasAte=d=>Math.round((Date.parse(d+'T00:00:00')-Date.parse(iso(Date.now())+'T00:00:00'))/DIA);
+const fmtRel=ts=>{const d=Math.round((Date.parse(iso(Date.now())+'T00:00:00')-Date.parse(iso(ts)+'T00:00:00'))/DIA);return d<=0?'hoje':d===1?'ontem':d<30?'há '+d+' dias':fmtCurta(iso(ts))};
+const pl=(n,s,p)=>n+' '+(n===1?s:p);
+const ic=d=>'<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+d+'</svg>';
+const I={painel:ic('<path d="M3 3h6v8H3zM11 3h6v4h-6zM11 9h6v8h-6zM3 13h6v4H3z"/>'),eventos:ic('<path d="M4 5h12v12H4zM4 9h12M7 3v4M13 3v4"/>'),ranking:ic('<path d="M4 17V9M10 17V3M16 17v-6"/>'),membros:ic('<circle cx="10" cy="7" r="3"/><path d="M4 17c0-3 2.7-5 6-5s6 2 6 5"/>'),regras:ic('<path d="M5 3h10v14H5zM8 7h4M8 10h4M8 13h2"/>'),auditoria:ic('<circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/>'),fone:ic('<rect x="6" y="2" width="8" height="16" rx="2"/><path d="M9 15h2"/>'),usuarios:ic('<circle cx="7.5" cy="7" r="2.5"/><path d="M2.5 16c0-2.5 2.2-4 5-4s5 1.5 5 4"/><circle cx="14" cy="6.5" r="2"/><path d="M14.5 11.5c2 .3 3.5 1.6 3.5 3.5"/>')};
+
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);if(p&&p.members&&p.events)return p}}catch(e){}return null}
+
+let toastT;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3200)}
+
+/* regras de pontos */
+function lanc(mid,eid,tipo,pontos,desc,ts){S.ledger.push({id:uid(),memberId:mid,eventId:eid,tipo,pontos,desc,ts:ts||Date.now()})}
+function pontos(mid,semEv,desde){return S.ledger.reduce((a,l)=>l.memberId===mid&&l.eventId!==semEv&&(!desde||l.ts>=desde)?a+l.pontos:a,0)}
+function stats(mid,semEv,desde){let pres=0,faltas=0,conf=0;S.events.forEach(e=>{if(e.id===semEv)return;if(desde&&Date.parse(e.data+'T23:59:59')<desde)return;const i=e.convidados[mid];if(!i)return;if(i.checkin)pres++;if(e.status==='encerrado'&&(i.status==='confirmado'||i.tarde)){conf++;if(!i.checkin)faltas++}});return{pres,faltas,conf}}
+function ranking(tag,semEv,desde){return S.members.filter(m=>!tag||tag==='Todos'||m.tags.includes(tag)).map(m=>Object.assign({m,p:pontos(m.id,semEv,desde)},stats(m.id,semEv,desde))).sort((a,b)=>b.p-a.p||b.pres-a.pres||a.m.nome.localeCompare(b.m.nome)).map((r,i)=>Object.assign(r,{pos:i+1}))}
+function ultimoFechado(){return S.events.filter(e=>e.status==='encerrado').sort((a,b)=>b.data.localeCompare(a.data))[0]}
+function rankingMov(tag,desde){const r=ranking(tag,undefined,desde);const u=ultimoFechado();if(!u)return r;const ant={};ranking(tag,u.id,desde).forEach(x=>ant[x.m.id]=x.pos);r.forEach(x=>x.mv=(ant[x.m.id]||x.pos)-x.pos);return r}
+/* temporada: o ranking da temporada zera, o saldo total e o nível não */
+function inicioTemporada(){const d=new Date();return new Date(d.getFullYear(),S.cfg.temporada==='ano'?0:(d.getMonth()<6?0:6),1).getTime()}
+function nomeTemporada(){const d=new Date();return S.cfg.temporada==='ano'?'temporada '+d.getFullYear():(d.getMonth()<6?'1º':'2º')+' semestre de '+d.getFullYear()}
+/* vagas e lista de espera */
+function vagasLivres(ev){return ev.vagas?ev.vagas-Object.values(ev.convidados).filter(i=>i.status==='confirmado').length:Infinity}
+function filaDe(ev){return Object.keys(ev.convidados).filter(k=>ev.convidados[k].status==='espera').sort((a,b)=>ev.convidados[a].filaTs-ev.convidados[b].filaTs)}
+function promover(ev){if(ev.status!=='aberto')return 0;const fila=filaDe(ev);let n=0;
+  while(fila.length&&vagasLivres(ev)>0){const mid=fila.shift();ev.convidados[mid].status='confirmado';n++;pushChat(mid,{from:'bot',text:'Abriu uma vaga no '+ev.nome+'. Sua presença está confirmada para '+fmtData(ev.data)+' às '+ev.hora+', '+ev.local+'.'})}
+  return n}
+/* código de check-in que muda a cada minuto */
+const hash=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%100000;return h};
+const minuto=()=>Math.floor(Date.now()/60000);
+const tokenDe=(ev,k)=>String((hash(ev.id)+k*7919)%900+100);
+const codigoAtual=ev=>ev.codigo+(S.cfg.qrRot?'-'+tokenDe(ev,minuto()):'');
+/* auditoria, planilhas e arquivos */
+function reg(acao){(S.audit||(S.audit=[])).unshift({ts:Date.now(),quem:me().nome,acao});if(S.audit.length>300)S.audit.length=300}
+const soDig=s=>String(s).replace(/\D/g,'');
+const brl=v=>'R$ '+v.toFixed(2).replace('.',',');
+const csv=linhas=>linhas.map(l=>l.map(c=>{c=String(c==null?'':c);return /[;"\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(';')).join('\r\n');
+function baixar(nome,texto,tipo){const b=new Blob(['﻿'+texto],{type:(tipo||'text/csv')+';charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=nome;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function parseCsv(t){t=String(t).replace(/^﻿/,'');const l1=t.split('\n')[0];const sep=(l1.match(/;/g)||[]).length>=(l1.match(/,/g)||[]).length?';':',';
+  const rows=[];let cur=[''],q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){if(ch==='"'){if(t[i+1]==='"'){cur[cur.length-1]+='"';i++}else q=false}else cur[cur.length-1]+=ch}
+    else if(ch==='"')q=true;else if(ch===sep)cur.push('');else if(ch==='\n'){rows.push(cur);cur=['']}else if(ch!=='\r')cur[cur.length-1]+=ch}
+  rows.push(cur);return rows.filter(r=>r.some(c=>c.trim()))}
+function importarCsv(texto){const rows=parseCsv(texto);if(rows.length<2)return{erro:'A planilha está vazia ou só tem o cabeçalho.'};
+  const cab=rows[0].map(c=>norm(c));const col=n=>cab.indexOf(n);if(col('NOME')<0||col('TELEFONE')<0)return{erro:'O cabeçalho precisa ter pelo menos as colunas nome e telefone.'};
+  const g=(r,n)=>{const i=col(n);return i<0?'':String(r[i]||'').trim()};
+  const exist=new Set(S.members.map(m=>soDig(m.telefone).slice(-11)));let novos=0,dup=0,inv=0,semAut=0;
+  rows.slice(1).forEach(r=>{const nome=g(r,'NOME');const d=soDig(g(r,'TELEFONE'));if(!nome||d.length<10||d.length>13){inv++;return}const k=d.slice(-11);if(exist.has(k)){dup++;return}exist.add(k);
+    const aut=/^(S|SIM|X|1)$/.test(norm(g(r,'AUTORIZOU')));if(!aut)semAut++;const tags=[g(r,'TURMA'),g(r,'CIDADE')].filter(Boolean);
+    S.members.push({id:'m'+uid(),nome,telefone:'+'+(d.length<=11?'55':'')+d,empresa:g(r,'EMPRESA')||'Sem empresa',cargo:g(r,'CARGO')||'Membro',tags:tags.length?tags:['Sem turma'],optin:aut,optinEm:aut?Date.now():null,optinOrigem:aut?'Planilha importada':null,optoutEm:null,oculto:false});novos++});
+  return{novos,dup,inv,semAut}}
+function proximo(){return S.events.filter(e=>e.status==='aberto').sort((a,b)=>a.data.localeCompare(b.data))[0]}
+function pushChat(mid,msg){(S.chats[mid]||(S.chats[mid]=[])).push(Object.assign({ts:Date.now()},msg))}
+
+/* regras editáveis: PTS e NIV são espelhos de S.cfg, que é o que o administrador altera */
+function applyCfg(){Object.assign(PTS,S.cfg.pts);NIV.length=0;S.cfg.niv.forEach((n,i)=>NIV.push([n.min,n.n,'n'+(3-i),n.ben||'']))}
+function tpl(t,ev,nome,extra){
+  const v=Object.assign({nome:primeiro(nome),evento:ev.nome,data:fmtData(ev.data),hora:ev.hora,local:ev.local,descricao:ev.descricao||'',pontos_resposta:PTS.resposta,pontos_checkin:PTS.checkin,pontos_falta:Math.abs(PTS.falta)},extra||{});
+  return t.replace(/\{(\w+)\}/g,(m,k)=>k in v?v[k]:m).replace(/\n{3,}/g,'\n\n').trim();
+}
+function conviteTexto(ev,nome){return tpl(S.cfg.msg.convite,ev,nome)}
+function gerarCodigo(local,data){
+  const ini=local.split(/\s+/).filter(w=>w.length>2||/^[A-Z]/.test(w)).map(w=>norm(w)[0]).join('').slice(0,2)||'EV';
+  const p=data.split('-');let c=ini+p[2]+p[1];let k=0;
+  while(S.events.some(e=>e.codigo===c)){k++;c=ini+p[2]+p[1]+String.fromCharCode(64+k)}
+  return c;
+}
+function enviarConvite(ev,ids){
+  let n=0;
+  ids.forEach(id=>{const m=member(id);if(!m||!m.optin||ev.convidados[id])return;
+    ev.convidados[id]={status:'pendente',checkin:false,respondeu:false};
+    pushChat(id,{from:'bot',text:conviteTexto(ev,m.nome),buttons:['Vou','Não vou','Talvez'],eventId:ev.id,arte:'convite'});n++});
+  return n;
+}
+function responder(eid,mid,label,opts){
+  opts=opts||{};const ev=evento(eid);const inv=ev&&ev.convidados[mid];if(!inv)return;
+  if(!opts.semBolha)pushChat(mid,{from:'user',text:label});
+  if(ev.status!=='aberto'){pushChat(mid,{from:'bot',text:'O '+ev.nome+' já foi encerrado.'});return}
+  let novo=RESP[label];const first=!inv.respondeu;const antes=inv.status;
+  if(novo==='confirmado'&&antes==='espera'){pushChat(mid,{from:'bot',text:'Você já está na lista de espera. Avisamos por aqui se abrir vaga.'});return}
+  if(!first&&antes===novo){pushChat(mid,{from:'bot',text:'Sua resposta já estava registrada.'});return}
+  const agora=opts.ts||Date.now();const inicio=Date.parse(ev.data+'T'+ev.hora+':00');
+  const foraPrazo=antes==='confirmado'&&novo!=='confirmado'&&agora>inicio-S.cfg.prazo*3600000;
+  if(novo==='confirmado'&&vagasLivres(ev)<=0){novo='espera';inv.filaTs=agora}
+  inv.status=novo;inv.respondeu=true;inv.tarde=foraPrazo?true:(novo==='confirmado'?false:!!inv.tarde);
+  if(first)lanc(mid,eid,'resposta',PTS.resposta,'Respondeu o convite do '+ev.nome,opts.ts);
+  const aviso=' Como faltam menos de '+S.cfg.prazo+' horas para o evento, a desistência conta como falta: você perde '+Math.abs(PTS.falta)+' pontos se não comparecer.';
+  let t;
+  if(novo==='confirmado')t='Presença confirmada. Te esperamos em '+fmtData(ev.data)+' às '+ev.hora+', '+ev.local+'. Na entrada, escaneie o QR code para fazer o check-in e ganhar '+PTS.checkin+' pontos.';
+  else if(novo==='espera')t='As vagas do '+ev.nome+' acabaram. Você está na lista de espera, na posição '+(filaDe(ev).indexOf(mid)+1)+'. Avisamos por aqui se abrir vaga.';
+  else if(novo==='recusado')t=foraPrazo?'Anotado.'+aviso:'Tudo bem, obrigado por avisar.';
+  else t='Anotado. Quando decidir, é só tocar em Vou ou Não vou na mensagem do convite.'+(foraPrazo?aviso:'');
+  if(first)t+=' Você ganhou '+PTS.resposta+' pontos por responder.';
+  pushChat(mid,{from:'bot',text:t});
+  if(antes==='confirmado'&&novo!=='confirmado')promover(ev);
+}
+function doCheckin(ev,mid,ts){
+  const inv=ev.convidados[mid];inv.checkin=true;
+  lanc(mid,ev.id,'checkin',PTS.checkin,'Check-in no '+ev.nome,ts);
+  if(inv.status==='confirmado'){lanc(mid,ev.id,'bonus',PTS.bonus,'Bônus: confirmou e compareceu ao '+ev.nome,ts);return PTS.checkin+PTS.bonus}
+  return PTS.checkin;
+}
+function encerrar(ev,ts){
+  ev.status='encerrado';ev.checkinAberto=false;let n=0;const faltou=i=>(i.status==='confirmado'||i.tarde)&&!i.checkin;
+  Object.keys(ev.convidados).forEach(mid=>{const i=ev.convidados[mid];if(faltou(i)){lanc(mid,ev.id,'falta',PTS.falta,(i.tarde?'Desistiu fora do prazo e não compareceu ao ':'Confirmou e não compareceu ao ')+ev.nome,ts);n++}});
+  if(S.cfg.pos){const rk={};ranking(undefined,undefined,inicioTemporada()).forEach(x=>rk[x.m.id]=x.pos);
+    Object.keys(ev.convidados).forEach(mid=>{const i=ev.convidados[mid];const m=member(mid);if(!m||!m.optin)return;
+      if(i.checkin)pushChat(mid,{from:'bot',text:tpl(S.cfg.msg.pos,ev,m.nome,{pontos_evento:S.ledger.reduce((a,l)=>l.memberId===mid&&l.eventId===ev.id?a+l.pontos:a,0),posicao:rk[mid]}),eventId:ev.id,arte:'pontos'});
+      else if(faltou(i))pushChat(mid,{from:'bot',text:tpl(S.cfg.msg.falta,ev,m.nome)})})}
+  return n;
+}
+function eventoAbertoDoMembro(mid){
+  return S.events.filter(e=>e.status==='aberto'&&e.convidados[mid]).sort((a,b)=>b.data.localeCompare(a.data))[0];
+}
+function processar(mid,texto){
+  const m=member(mid);const t=norm(texto);
+  pushChat(mid,{from:'user',text:texto});
+  const bot=s=>pushChat(mid,{from:'bot',text:s});
+  if(t==='SAIR'){m.optin=false;m.optoutEm=Date.now();bot('Pronto, você não vai mais receber convites do Pontua. Para voltar, envie VOLTAR.');return}
+  if(t==='VOLTAR'){m.optin=true;m.optinEm=Date.now();m.optinOrigem='WhatsApp, comando VOLTAR';m.optoutEm=null;bot('Você voltou a receber os convites do Pontua.');return}
+  if(t==='OCULTAR'){m.oculto=true;bot('Pronto. Seu nome não aparece mais no ranking que os outros membros veem. Para voltar, envie MOSTRAR.');return}
+  if(t==='MOSTRAR'){m.oculto=false;bot('Seu nome voltou a aparecer no ranking.');return}
+  const desde=inicioTemporada();
+  if(t==='PONTOS'){
+    const total=pontos(mid);const r=ranking(undefined,undefined,desde);const eu=r.find(x=>x.m.id===mid);
+    const ult=S.ledger.filter(l=>l.memberId===mid).sort((a,b)=>b.ts-a.ts).slice(0,3);
+    if(!ult.length){bot('Você ainda não tem pontos. Responda um convite ou faça check-in em um evento para começar.');return}
+    const nv=nivel(total);const prox=NIV.filter(n=>n[0]>total).pop();
+    bot('Você tem '+total+' pontos no total. No '+nomeTemporada()+' são '+eu.p+' pontos e o '+eu.pos+'º lugar entre '+r.length+' membros.\n\nNível: '+nv[1]+(nv[3]?' ('+nv[3]+')':'')+(prox?'. Faltam '+(prox[0]-total)+' pontos para '+prox[1]+'.':'.')+'\n\nÚltimos lançamentos:\n'+ult.map(l=>(l.pontos>0?'+':'')+l.pontos+' '+l.desc).join('\n'));return}
+  if(t==='RANKING'){
+    const r=ranking(undefined,undefined,desde);const eu=r.find(x=>x.m.id===mid);
+    const nm=x=>x.m.id===mid?x.m.nome+' (você)':x.m.oculto?'Membro oculto':x.m.nome;
+    let s='Ranking do Pontua, '+nomeTemporada()+'\n\n'+r.slice(0,5).map(x=>x.pos+'º '+nm(x)+', '+x.p+' pts').join('\n');
+    if(eu.pos>5)s+='\n\n'+eu.pos+'º Você, '+eu.p+' pts';
+    bot(s);return}
+  if(t.startsWith('CHECKIN')){
+    const cod=t.replace('CHECKIN','').trim().replace(/\s/g,'');
+    if(!cod){bot('Envie CHECKIN seguido do código do evento. O mais fácil é escanear o QR code da entrada.');return}
+    const partes=cod.split('-');const ev=S.events.find(e=>e.codigo===partes[0]);
+    if(!ev){bot('Código não encontrado. Confira o código no QR code da entrada.');return}
+    if(ev.status!=='aberto'||!ev.checkinAberto){bot('O check-in do '+ev.nome+' não está aberto agora.');return}
+    if(S.cfg.qrRot&&partes[1]!==tokenDe(ev,minuto())&&partes[1]!==tokenDe(ev,minuto()-1)){bot('Esse código expirou. Escaneie de novo o QR code que está na entrada.');return}
+    const inv=ev.convidados[mid];
+    if(!inv){bot('Você não está na lista de convidados do '+ev.nome+'. Fale com a organização na entrada.');return}
+    if(inv.checkin){bot('Você já fez check-in no '+ev.nome+'.');return}
+    const g=doCheckin(ev,mid);
+    pushChat(mid,{from:'bot',text:'Check-in feito no '+ev.nome+'. Você ganhou '+g+' pontos'+(g>PTS.checkin?' (inclui o bônus por ter confirmado)':'')+'. Seu total agora é '+pontos(mid)+'.',eventId:ev.id,arte:'pontos'});return}
+  const map={'VOU':'Vou','SIM':'Vou','NAO':'Não vou','NAO VOU':'Não vou','TALVEZ':'Talvez'};
+  if(map[t]){const ev=eventoAbertoDoMembro(mid);if(ev){responder(ev.id,mid,map[t],{semBolha:true});return}bot('Você não tem nenhum convite aberto agora.');return}
+  if(t==='AJUDA'){bot('Comandos disponíveis:\n\nPONTOS para ver seu saldo e seu nível\nRANKING para ver os primeiros colocados\nOCULTAR para não aparecer com nome no ranking\nSAIR para não receber mais convites\n\nNo dia do evento, escaneie o QR code da entrada para fazer o check-in.');return}
+  bot('Não entendi. Envie AJUDA para ver o que posso fazer.');
+}
+
+/* dados de exemplo: datas relativas a hoje para a demonstração nunca ficar velha */
+function seed(){
+  const r=rng(11);
+  const nomes=[['Ana Ribeiro','Banco Horizonte','Turma 2025','São Paulo'],['Bruno Tavares','Grupo Varella','Turma 2025','São Paulo'],['Carla Menezes','Saúde Integra','Turma 2026','Rio de Janeiro'],['Diego Albuquerque','Logística Atlas','Turma 2025','São Paulo'],['Eduarda Siqueira','Energia Prisma','Turma 2026','São Paulo'],['Felipe Rocha','TelCom Sul','Turma 2025','Rio de Janeiro'],['Gabriela Nunes','Seguradora Âncora','Turma 2026','São Paulo'],['Henrique Barros','Varejo Bom Lar','Turma 2025','Campinas'],['Isabela Prado','Banco Horizonte','Turma 2026','São Paulo'],['João Martins','Mineração Serra Azul','Turma 2025','Rio de Janeiro'],['Karina Lopes','Agro Campo Vivo','Turma 2026','Campinas'],['Leonardo Faria','Fintech Pagaí','Turma 2025','São Paulo'],['Mariana Coelho','Hospital Santa Clara','Turma 2026','São Paulo'],['Nelson Andrade','Grupo Varella','Turma 2025','São Paulo'],['Otávio Pires','Construtora Base','Turma 2026','Rio de Janeiro'],['Patrícia Moura','TelCom Sul','Turma 2025','São Paulo'],['Rafael Duarte','Energia Prisma','Turma 2026','Campinas'],['Sabrina Teles','Fintech Pagaí','Turma 2025','São Paulo'],['Thiago Monteiro','Logística Atlas','Turma 2026','São Paulo'],['Vanessa Cardoso','Seguradora Âncora','Turma 2025','Rio de Janeiro'],['Wagner Lima','Varejo Bom Lar','Turma 2026','São Paulo'],['Yasmin Freitas','Saúde Integra','Turma 2025','São Paulo'],['Marcos Vieira','Mineração Serra Azul','Turma 2026','Rio de Janeiro'],['Renata Campos','Agro Campo Vivo','Turma 2025','Campinas']];
+  const cargos=['Gerente de Projetos','Analista de Dados','Designer de Produto','Gerente de Marketing','Engenharia de Software','Analista de RH'];
+  S={members:[],events:[],ledger:[],chats:{},cfg:CFG0(),users:USERS0(),me:'u1',audit:[]};applyCfg();
+  nomes.forEach((n,i)=>{const tel='(11) 9'+String(Math.floor(r()*9000)+1000)+'-'+String(Math.floor(r()*9000)+1000);const fora=i===14||i===20;
+    S.members.push({id:'m'+(i+1),nome:n[0],empresa:n[1],cargo:cargos[i%cargos.length],telefone:tel,tags:[n[2],n[3]],optin:!fora,optinEm:Date.now()-(260+i*3)*DIA,optinOrigem:'formulário de inscrição',optoutEm:fora?Date.now()-(70+i)*DIA:null,oculto:i===7})});
+  const mk=(id,nome,dias,hora,local,descricao,vagas)=>{const data=iso(Date.now()+dias*DIA);const e={id,nome,data,hora,local,descricao,vagas:vagas||null,codigo:gerarCodigo(local,data),status:'aberto',checkinAberto:false,convidados:{},lembrete:null,cobranca:null};S.events.push(e);return e};
+  const rodar=(ev,ps,pc)=>{
+    const base=Date.parse(ev.data+'T'+ev.hora+':00');const futuro=base>Date.now();
+    enviarConvite(ev,S.members.filter(m=>m.optin).map(m=>m.id));
+    Object.keys(ev.convidados).forEach(mid=>{const x=r();let lab=null;
+      if(x<ps[0])lab='Vou';else if(x<ps[1])lab='Não vou';else if(x<ps[2])lab='Talvez';
+      const ts=futuro?Date.now()-Math.floor(r()*5*DIA):base-DIA*(3+Math.floor(r()*6));
+      if(lab)responder(ev.id,mid,lab,{ts})});
+    if(pc){ev.checkinAberto=true;Object.keys(ev.convidados).forEach(mid=>{const i=ev.convidados[mid];
+      const pr=i.status==='confirmado'?pc:i.status==='talvez'?0.35:0.03;if(r()<pr)doCheckin(ev,mid,base+1800000)});
+      encerrar(ev,base+10800000)}
+  };
+  rodar(mk('e0','Encontro de abertura do ano',-200,'19:00','São Paulo','Abertura da temporada com apresentação das turmas.'),[0.55,0.72,0.84],0.75);
+  rodar(mk('e1','Meetup de Tecnologia Rio',-55,'19:00','Rio de Janeiro','Bate-papo sobre carreira e inovação com convidados do mercado.'),[0.6,0.78,0.88],0.8);
+  rodar(mk('e2','Workshop: gestão de projetos ágeis',-19,'19:30','São Paulo','Oficina prática com casos reais e troca de experiências.'),[0.58,0.75,0.86],0.78);
+  const e3=mk('e3','Encontro de Fim de Ano São Paulo',24,'19:00','São Paulo','Encontro de fim de ano com palestra e networking.',12);
+  rodar(e3,[0.42,0.56,0.64],0);
+  S.chats={};
+  Object.keys(e3.convidados).forEach(mid=>{const m=member(mid);const i=e3.convidados[mid];
+    pushChat(mid,{from:'bot',text:conviteTexto(e3,m.nome),buttons:['Vou','Não vou','Talvez'],eventId:e3.id});
+    if(i.respondeu){const lab=i.status==='espera'?'Vou':Object.keys(RESP).find(k=>RESP[k]===i.status);pushChat(mid,{from:'user',text:lab});
+      pushChat(mid,{from:'bot',text:i.status==='espera'?'As vagas do '+e3.nome+' acabaram. Você está na lista de espera, na posição '+(filaDe(e3).indexOf(mid)+1)+'. Avisamos por aqui se abrir vaga. Você ganhou '+PTS.resposta+' pontos por responder.':i.status==='confirmado'?'Presença confirmada. Te esperamos em '+fmtData(e3.data)+' às '+e3.hora+', '+e3.local+'. Na entrada, escaneie o QR code para fazer o check-in e ganhar '+PTS.checkin+' pontos. Você ganhou '+PTS.resposta+' pontos por responder.':i.status==='recusado'?'Tudo bem, obrigado por avisar. Você ganhou '+PTS.resposta+' pontos por responder.':'Anotado. Quando decidir, é só tocar em Vou ou Não vou na mensagem do convite. Você ganhou '+PTS.resposta+' pontos por responder.'})}});
+}
+
+function contagem(ev){const c={total:0,confirmado:0,espera:0,recusado:0,talvez:0,pendente:0,checkin:0};
+  Object.values(ev.convidados).forEach(i=>{c.total++;c[i.status]++;if(i.checkin)c.checkin++});return c}
+function barra(c,semLegenda){const T=c.total||1;
+  return '<div class="fbar" role="img" aria-label="Distribuição das respostas">'+SEG.map(s=>c[s[0]]?'<i style="flex:'+c[s[0]]/T+';background:'+s[1]+'"></i>':'').join('')+'</div>'+
+  (semLegenda?'':'<div class="legend">'+SEG.filter(s=>s[0]!=='espera'||c.espera).map(s=>'<span><i style="background:'+s[1]+'"></i>'+s[2]+' <b>'+c[s[0]]+'</b></span>').join('')+'</div>');
+}
+const stBadge=e=>e.status==='encerrado'?'<span class="badge b-wait">Encerrado</span>':e.checkinAberto?'<span class="badge b-ok live"><i class="dot"></i>Check-in aberto</span>':'<span class="badge b-info">Aberto</span>';
+
+/* render */
+const app=document.getElementById('app');
+const NAV=[['painel','Painel'],['eventos','Eventos'],['ranking','Ranking'],['membros','Membros'],['regras','Regras'],['usuarios','Usuários'],['auditoria','Auditoria']];
+const TAB_ADMIN=new Set(['usuarios','auditoria']);
+/* entrada: no protótipo a senha e o código são fixos (DEMO_SENHA e DEMO_COD) e valem para todos os usuários.
+   Para trocar pela marca real, basta substituir o desenho em logo() (ingresso com check: evento + presença). */
+const SESS='pontua-sessao',INATIVO=30*60000,DEMO_SENHA='admin',DEMO_COD='123456';
+const LOGIN0=()=>({passo:1,uid:null,email:'admin@exemplo.com',erro:'',aviso:'',falhas:0,trava:0,visto:false,marca:'',entrando:false});
+/* pinta o ingresso de vermelho (bad) ou verde (ok) e refaz o traço; vazio volta ao normal */
+function marcaLogin(m){loginSt.marca=m;const s=document.querySelector('.login-side');if(!s)return;s.classList.remove('bad','ok');
+  const k=s.querySelector('.login-mark');k.classList.remove('draw');if(m){void k.getBoundingClientRect();s.classList.add(m);k.classList.add('draw')}}
+let sessao=null,loginSt=LOGIN0(),ultAtiv=Date.now();
+const logo=(sw,cls)=>'<svg'+(cls?' class="'+cls+'"':'')+' viewBox="0 0 64 72" fill="none" stroke="currentColor" stroke-width="'+sw+'" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path pathLength="1" d="M15 6h34a7 7 0 0 1 7 7v17a6 6 0 0 0 0 12v17a7 7 0 0 1-7 7H15a7 7 0 0 1-7-7V42a6 6 0 0 0 0-12V13a7 7 0 0 1 7-7z"/><path pathLength="1" d="M21 37l8 8 15-17"/></svg>';
+function sessLer(){try{return sessionStorage.getItem(SESS)}catch(e){return null}}
+function sessGravar(v){try{if(v)sessionStorage.setItem(SESS,v);else sessionStorage.removeItem(SESS)}catch(e){}}
+const travaSeg=()=>Math.max(0,Math.ceil((loginSt.trava-Date.now())/1000));
+function sair(aviso){if(!sessao)return;reg('Saiu do painel');save();sessao=null;sessGravar(null);view=VIEW0();draft=null;loginSt=LOGIN0();loginSt.aviso=aviso||'';loginSt.visto=true;render()}
+function vLogin(){
+  const L=loginSt,preso=travaSeg()>0,u=L.uid&&S.users.find(x=>x.id===L.uid);
+  const form=L.passo===1?
+    '<h1>Entrar</h1><p class="lead">Painel de eventos, presença e ranking.</p>'+
+    (L.aviso?'<p class="small muted" style="margin:-10px 0 16px">'+esc(L.aviso)+'</p>':'')+
+    '<form id="loginform" novalidate><div class="field"><label for="lemail">E-mail</label><input id="lemail" name="email" type="email" autocomplete="username" spellcheck="false" value="'+esc(L.email)+'"></div>'+
+    '<div class="field"><label for="lsenha">Senha</label><input id="lsenha" name="senha" type="password" autocomplete="current-password"></div>'+
+    '<p class="err" id="lerr" role="alert">'+(preso?'Muitas tentativas. Aguarde '+travaSeg()+' s para tentar de novo.':esc(L.erro))+'</p>'+
+    '<button class="btn primary" type="submit"'+(preso?' disabled':'')+'>Continuar</button></form>':
+    '<h1>Verificação em duas etapas</h1><p class="lead">Digite o código de 6 dígitos do aplicativo autenticador de '+esc(u?u.email:'')+'.</p>'+
+    '<form id="codeform" novalidate><div class="otp-row">'+[0,1,2,3,4,5].map(i=>'<input class="otp" inputmode="numeric" maxlength="1" aria-label="Dígito '+(i+1)+' de 6"'+(i?'':' autocomplete="one-time-code"')+'>').join('')+'</div>'+
+    '<p class="err" id="lerr" role="alert">'+esc(L.erro)+'</p>'+
+    '<button class="btn primary" type="submit">Entrar</button><button class="btn quiet" type="button" data-act="login-voltar">Voltar</button></form>';
+  return '<div class="login"><aside class="login-side'+(L.marca?' '+L.marca:'')+'"><div class="login-brand">'+logo(4)+'Pontua</div>'+logo(.28,'login-mark'+(L.visto&&!L.marca?'':' draw'))+
+    '<div class="login-facts"><h2>Como o acesso é protegido</h2><ul>'+
+    '<li><b>Só entra quem foi cadastrado</b>O administrador cria cada usuário e define o perfil dele.</li>'+
+    '<li><b>Duas etapas em todo acesso</b>Senha e código do aplicativo autenticador.</li>'+
+    '<li><b>Sessão com prazo</b>Encerra sozinha após 30 minutos sem uso.</li>'+
+    '<li><b>Tudo fica registrado</b>Cada entrada e cada alteração aparecem na auditoria.</li></ul></div></aside>'+
+    '<main class="login-main"><div class="login-box">'+form+
+    '<p class="login-note">Protótipo de demonstração, com dados fictícios. Acesso: admin@exemplo.com, senha admin, código 123456.</p></div></main></div>';
+}
+function render(){
+  if(!sessao){app.innerHTML=vLogin();loginSt.visto=true;const f=document.querySelector(loginSt.passo===1?'#lsenha':'.otp');if(f)f.focus();return}
+  let body;
+  if(view.tab==='painel')body=vPainel();
+  else if(view.tab==='eventos')body=view.novo?vNovo():view.eventId?vEvento():vEventos();
+  else if(view.tab==='ranking')body=vRanking();
+  else if(view.tab==='membros')body=vMembros();
+  else if(view.tab==='usuarios')body=vUsuarios();
+  else if(view.tab==='auditoria')body=vAuditoria();
+  else body=vRegras();
+  const eu=me();
+  const vk=view.tab+'|'+view.eventId+'|'+view.novo;const entrou=vk!==viewKey;viewKey=vk;
+  const dockIn=view.dock&&!dockWas;dockWas=view.dock;
+  const crumb=view.tab==='eventos'&&view.novo?'Eventos / Novo':view.tab==='eventos'&&view.eventId?'Eventos / Detalhe':NAV.find(n=>n[0]===view.tab)[1];
+  app.innerHTML='<a class="skip" href="#conteudo">Pular para o conteúdo</a><div class="shell'+(view.dock?' dock-open':'')+'">'+
+    '<aside class="rail"><div class="brand">'+logo(4.5)+'Pontua</div>'+
+    '<nav class="nav" aria-label="Seções">'+NAV.filter(n=>!TAB_ADMIN.has(n[0])||eu.papel==='admin').map(n=>'<button data-act="tab" data-v="'+n[0]+'"'+(view.tab===n[0]?' aria-current="page"':'')+'>'+I[n[0]]+'<span>'+n[1]+'</span></button>').join('')+'</nav>'+
+    '<p class="rail-foot">Protótipo com dados fictícios. Nenhuma mensagem é enviada de verdade.</p></aside>'+
+    '<div class="main"><header class="bar"><span class="eyebrow">'+crumb+'</span><div class="row"><label class="small muted" for="mesel">Ver como</label><select id="mesel" class="inl">'+S.users.filter(u=>u.ativo).map(u=>'<option value="'+u.id+'"'+(u.id===eu.id?' selected':'')+'>'+esc(u.nome)+', '+PAPEL[u.papel]+'</option>').join('')+'</select><button class="btn sm quiet" data-act="reset">Restaurar exemplo</button><button class="btn sm" data-act="dock" aria-pressed="'+view.dock+'">'+I.fone+'Simulador</button><button class="btn sm quiet" data-act="sair">Sair</button></div></header>'+
+    '<main id="conteudo"'+(entrou?' class="enter"':'')+'><div class="wrap">'+body+'</div></main></div>'+
+    (view.dock?vDock(dockIn):'')+'</div>'+(view.drawer?vDrawer():'')+(view.telao?vTelao():'');
+  after();save();
+}
+function qr(el,ev,size){if(!el)return;const link='https://wa.me/'+WHATS+'?text='+encodeURIComponent('CHECKIN '+codigoAtual(ev));
+  if(window.QRCode)new QRCode(el,{text:link,width:size,height:size,colorDark:'#000000',colorLight:'#ffffff'});else el.innerHTML='<span class="small" style="line-height:1.4;color:#0a0b0d">QR indisponível</span>'}
+function after(){
+  if(view.telao){const ev=evento(view.telao);if(ev)qr(document.getElementById('qr-big'),ev,Math.min(420,Math.round(window.innerWidth*.3)+120))}
+  else if(view.tab==='eventos'&&view.eventId&&!view.novo){const ev=evento(view.eventId);if(ev&&ev.checkinAberto)qr(document.getElementById('qr'),ev,132)}
+  const m=document.getElementById('msgs');if(m)m.scrollTop=m.scrollHeight;
+  if(view.tab==='eventos'&&view.novo)updDraft();
+  relogio();
+  /* esconde o que o perfil não pode usar, em vez de mostrar e bloquear */
+  const papel=me().papel;const some=s=>document.querySelectorAll(s).forEach(el=>el.hidden=true);
+  if(papel!=='admin'){some(Array.from(SO_ADMIN).map(a=>'[data-act="'+a+'"]').join(','));some('[data-bloco="ajuste"],[data-bloco="lgpd"],[data-bloco="cfgbtn"]');
+    document.querySelectorAll('#cfgform input,#cfgform textarea,#cfgform select').forEach(el=>el.disabled=true)}
+  if(papel==='leitura'){some(Array.from(ESCRITA).map(a=>'[data-act="'+a+'"]').join(','));some('[data-bloco="extras"],label.btn,.demo')}
+}
+let ultMin=0;
+function relogio(){const el=document.getElementById('qrcount');if(el)el.textContent='Troca em '+(60-new Date().getSeconds())+' s.'}
+setInterval(()=>{relogio();const k=minuto();if(k!==ultMin){const primeira=!ultMin;ultMin=k;if(!primeira&&S&&S.cfg.qrRot&&(document.getElementById('qr')||document.getElementById('qr-big')))render()}},1000);
+
+function vPainel(){
+  const r=ranking();const fechados=S.events.filter(e=>e.status==='encerrado');
+  let conf=0,pres=0;fechados.forEach(e=>Object.values(e.convidados).forEach(i=>{if(i.status==='confirmado'){conf++;if(i.checkin)pres++}}));
+  const ativos=S.members.filter(m=>m.optin).length;
+  const distrib=S.ledger.reduce((a,l)=>l.pontos>0?a+l.pontos:a,0);
+  const feed=S.ledger.slice().sort((a,b)=>b.ts-a.ts).slice(0,7);
+  const prox=proximo();let hero;
+  if(prox){const c=contagem(prox);const d=diasAte(prox.data);const pend=[];
+    if(c.pendente)pend.push(['<b>'+c.pendente+'</b> '+(c.pendente===1?'convidado ainda não respondeu':'convidados ainda não responderam'),'Cobrar resposta','cobrar']);
+    if(!prox.lembrete&&c.confirmado+c.talvez)pend.push(['Lembrete ainda não enviado para <b>'+(c.confirmado+c.talvez)+'</b> que vão ou talvez','Enviar lembrete','lembrete']);
+    pend.push(prox.checkinAberto?['Check-in aberto, <b>'+c.checkin+'</b> '+(c.checkin===1?'presente':'presentes'),'Modo telão','telao']:['Check-in fechado. Abra no dia do evento','Abrir check-in','toggle-ci']);
+    const quando=d>1?'em '+d+' dias':d===1?'amanhã':d===0?'hoje':'data já passou';
+    hero='<section class="card next"><div class="spread"><div><div class="small muted">Próximo evento, '+quando+'</div><h2>'+esc(prox.nome)+'</h2><div class="small muted">'+fmtData(prox.data)+' às '+prox.hora+', '+esc(prox.local)+'</div></div><button class="btn" data-act="open-ev" data-v="'+prox.id+'">Abrir evento</button></div>'+barra(c)+
+      '<ul class="todo">'+pend.map(p=>'<li><span>'+p[0]+'</span><button class="btn sm" data-act="'+p[2]+'" data-ev="'+prox.id+'">'+p[1]+'</button></li>').join('')+'</ul></section>';
+  }else hero='<section class="card next"><h2>Nenhum evento aberto</h2><p class="muted" style="margin:2px 0 0">Crie um evento para enviar os convites e acompanhar as respostas por aqui.</p></section>';
+  return '<div class="head"><h1>Painel</h1><button class="btn primary" data-act="novo">Criar evento</button></div>'+
+  '<section class="kpis"><div class="kpi"><span>Membros recebendo convites</span><b>'+ativos+'</b></div><div class="kpi"><span>Eventos realizados</span><b>'+fechados.length+'</b></div><div class="kpi"><span>Comparecimento</span><b>'+(conf?Math.round(pres/conf*100):0)+'%</b></div><div class="kpi"><span>Pontos distribuídos</span><b>'+distrib.toLocaleString('pt-BR')+'</b></div></section>'+hero+
+  '<div class="cols"><section class="card"><div class="spread"><h2>Ranking</h2><button class="link small" data-act="tab" data-v="ranking">Ver completo</button></div><ul class="list">'+
+    r.slice(0,5).map(x=>'<li><span class="rk">'+x.pos+'</span><div><button class="link" style="text-decoration:none" data-act="member" data-v="'+x.m.id+'">'+esc(x.m.nome)+'</button><small>'+esc(x.m.cargo)+', '+esc(x.m.empresa)+'</small></div><span class="pts">'+x.p+'</span></li>').join('')+'</ul></section>'+
+  '<section class="card"><h2>Atividade recente</h2>'+(feed.length?'<ul class="list">'+feed.map(l=>{const m=member(l.memberId);return '<li><span class="av sm" aria-hidden="true">'+esc(iniciais(m?m.nome:'?'))+'</span><div>'+esc(m?m.nome:'Membro removido')+'<small>'+esc(l.desc)+', '+fmtRel(l.ts)+'</small></div><span class="p '+(l.pontos<0?'neg':'pos')+'">'+(l.pontos>0?'+':'')+l.pontos+'</span></li>'}).join('')+'</ul>':'<p class="empty">Os pontos aparecem aqui conforme os membros respondem e fazem check-in.</p>')+'</section></div>';
+}
+
+function vRanking(){
+  const desde=view.rkPer==='geral'?undefined:inicioTemporada();
+  const r=rankingMov(view.rkTag,desde);const nt=nomeTemporada();
+  const mv=x=>x.mv>0?'<span class="mv up">▲ '+x.mv+'</span>':x.mv<0?'<span class="mv down">▼ '+(-x.mv)+'</span>':'';
+  return '<div class="head"><h1>Ranking</h1><button class="btn" data-act="exp-ranking">Exportar planilha</button></div>'+
+  '<div class="spread" style="margin-bottom:12px"><div class="chips" role="group" aria-label="Período"><button class="chip" data-act="rk-per" data-v="temp" aria-pressed="'+(view.rkPer!=='geral')+'">'+nt.charAt(0).toUpperCase()+nt.slice(1)+'</button><button class="chip" data-act="rk-per" data-v="geral" aria-pressed="'+(view.rkPer==='geral')+'">Geral</button></div>'+
+  '<div class="chips" role="group" aria-label="Filtrar por turma ou cidade">'+tagsAll().map(t=>'<button class="chip" data-act="rk-tag" data-v="'+esc(t)+'" aria-pressed="'+(view.rkTag===t)+'">'+esc(t)+'</button>').join('')+'</div></div>'+
+  (!r.length?'<p class="empty">Nenhum membro neste filtro.</p>':
+  '<div class="tbl"><table><thead><tr><th>Posição</th><th>Membro</th><th>Nível</th><th class="num">Presenças</th><th class="num">Faltas</th><th class="num">Pontos</th></tr></thead><tbody>'+
+  r.map(x=>'<tr class="clk" data-act="member" data-v="'+x.m.id+'"><td class="pos-cell">'+x.pos+mv(x)+'</td><td><div class="cellp"><div><b>'+esc(x.m.nome)+'</b>'+(x.m.oculto?' <span class="small muted">(oculto para os outros membros)</span>':'')+'<div class="small muted">'+esc(x.m.cargo)+', '+esc(x.m.empresa)+'</div></div></div></td><td class="niv">'+nivel(pontos(x.m.id))[1]+'</td><td class="num">'+x.pres+'</td><td class="num">'+(x.faltas||'')+'</td><td class="num"><span class="pts">'+x.p+'</span></td></tr>').join('')+
+  '</tbody></table></div><p class="note">'+(view.rkPer==='geral'?'Soma de todos os pontos desde o início.':'Só conta o que aconteceu no '+nt+'. O nível usa o saldo total e não zera.')+' As setas comparam com a posição antes do último evento encerrado.</p>');
+}
+
+function vEventos(){
+  const evs=S.events.slice().sort((a,b)=>a.status===b.status?(a.status==='aberto'?a.data.localeCompare(b.data):b.data.localeCompare(a.data)):a.status==='aberto'?-1:1);
+  return '<div class="head"><h1>Eventos</h1><button class="btn primary" data-act="novo">Criar evento</button></div>'+
+  (evs.length?'<div class="ev-list">'+evs.map(e=>{const c=contagem(e);const p=e.data.split('-');
+    const resumo=e.status==='encerrado'?c.checkin+' presentes de '+c.confirmado+' confirmados':c.confirmado+' vão, '+c.talvez+' talvez, '+c.pendente+' sem resposta';
+    return '<button class="ev" data-act="open-ev" data-v="'+e.id+'"><span class="d">'+p[2]+' '+MES[+p[1]-1]+' '+p[0]+'</span><span><span class="name">'+esc(e.nome)+'</span><br><span class="meta">'+e.hora+', '+esc(e.local)+', '+c.total+' convidados</span></span><span class="ev-bar">'+barra(c,true)+'<span class="meta">'+resumo+'</span></span>'+stBadge(e)+'</button>'}).join('')+'</div>':
+  '<p class="empty">Nenhum evento ainda. Crie o primeiro para enviar os convites.</p>');
+}
+
+function vEvento(){
+  const ev=evento(view.eventId);if(!ev){view.eventId=null;return vEventos()}
+  const c=contagem(ev);const aberto=ev.status==='aberto';const resp=c.total-c.pendente;
+  const ord=['confirmado','talvez','pendente','recusado'];
+  const lista=Object.keys(ev.convidados).map(mid=>({m:member(mid),i:ev.convidados[mid],p:S.ledger.filter(l=>l.memberId===mid&&l.eventId===ev.id).reduce((a,l)=>a+l.pontos,0)}))
+    .filter(x=>x.m&&(view.filtro==='todos'||(view.filtro==='presentes'?x.i.checkin:x.i.status===view.filtro)))
+    .sort((a,b)=>(b.i.checkin-a.i.checkin)||(ord.indexOf(a.i.status)-ord.indexOf(b.i.status))||a.m.nome.localeCompare(b.m.nome));
+  const steps=[['Convites',c.total+' enviados','done'],['Respostas',resp+' de '+c.total+' responderam',c.pendente===0||!aberto?'done':'now'],['Check-in',pl(c.checkin,'presente','presentes'),!aberto?'done':ev.checkinAberto?'now':''],['Encerramento',aberto?'Aplica bônus e faltas':'Pontos lançados',aberto?'':'done']];
+  const filtros=[['todos','Todos',c.total],['confirmado','Vão',c.confirmado],['talvez','Talvez',c.talvez],['pendente','Sem resposta',c.pendente],['recusado','Não vão',c.recusado],['presentes','Presentes',c.checkin]];
+  return '<button class="link small" data-act="back">Voltar para eventos</button>'+
+  '<div class="head" style="margin-top:10px"><div><h1>'+esc(ev.nome)+'</h1><p class="lead">'+fmtData(ev.data)+' às '+ev.hora+', '+esc(ev.local)+'. Código '+ev.codigo+'.'+(ev.descricao?' '+esc(ev.descricao):'')+'</p><div style="margin-top:6px">'+stBadge(ev)+'</div></div>'+
+  '<div class="row">'+(view.editEvent?'':'<button class="btn" data-act="edit-event">Editar</button>')+(aberto?'<button class="btn danger" data-act="encerrar">Encerrar evento</button>':'')+'</div></div>'+
+  (view.editEvent?'<section class="card" style="margin-bottom:16px"><form id="eventform" class="fields"><div class="field full"><label for="v-nome">Nome do evento</label><input id="v-nome" name="nome" type="text" value="'+esc(ev.nome)+'" required></div><div class="field"><label for="v-data">Data</label><input id="v-data" name="data" type="date" value="'+ev.data+'" required></div><div class="field"><label for="v-hora">Horário</label><input id="v-hora" name="hora" type="time" value="'+ev.hora+'" required></div><div class="field full"><label for="v-local">Local</label><input id="v-local" name="local" type="text" value="'+esc(ev.local)+'" required></div><div class="field full"><label for="v-desc">Descrição curta</label><textarea id="v-desc" name="descricao">'+esc(ev.descricao)+'</textarea></div><label class="row full" style="grid-column:1/-1"><input type="checkbox" name="avisar" checked style="accent-color:var(--ink)"> Avisar os convidados pelo WhatsApp se a data, o horário ou o local mudarem</label><div class="row" style="grid-column:1/-1"><button class="btn primary" type="submit">Salvar</button><button class="btn" type="button" data-act="edit-event">Cancelar</button></div></form></section>':'')+
+  '<ol class="steps">'+steps.map((s,i)=>'<li class="'+s[2]+'"><span class="n">0'+(i+1)+'</span><b>'+s[0]+'</b><small>'+s[1]+'</small></li>').join('')+'</ol>'+
+  '<div class="ev-grid"><section class="card"><div class="spread"><h2>Respostas</h2><span class="small muted">'+c.total+' convidados</span></div>'+barra(c)+
+    '<div class="row" style="margin-top:24px"><button class="btn" data-act="cobrar"'+(aberto&&c.pendente?'':' disabled')+'>Cobrar quem não respondeu</button><button class="btn" data-act="lembrete"'+(aberto&&c.confirmado+c.talvez?'':' disabled')+'>Enviar lembrete</button></div>'+
+    '<p class="small muted" style="margin:12px 0 0">'+(ev.lembrete?'Lembrete enviado '+fmtRel(ev.lembrete)+'. ':'')+(ev.cobranca?'Cobrança enviada '+fmtRel(ev.cobranca)+'. ':'')+(aberto?'Ao encerrar, quem confirmou e não fez check-in perde '+Math.abs(PTS.falta)+' pontos.':'Evento encerrado, os pontos já foram lançados.')+'</p></section>'+
+  '<section class="card"><div class="spread"><h2>Check-in</h2>'+(aberto?'<button class="btn sm" data-act="toggle-ci">'+(ev.checkinAberto?'Fechar':'Abrir check-in')+'</button>':'')+'</div>'+
+    (ev.checkinAberto?'<div class="ci" style="margin-top:18px"><div class="qr" id="qr"></div><div><div class="code">CHECKIN '+ev.codigo+'</div><p class="small muted" style="margin:8px 0 14px">O QR abre o WhatsApp com a mensagem pronta. O membro só toca em enviar.</p><button class="btn primary" data-act="telao" data-ev="'+ev.id+'">Abrir modo telão</button></div></div>':
+    '<p class="muted" style="margin:18px 0 0">'+(aberto?'Abra o check-in na hora do evento. Enquanto estiver fechado, o código não vale pontos, mesmo que alguém tenha a foto do QR.':'Check-in encerrado com '+pl(c.checkin,'presença','presenças')+'.')+'</p>')+'</section></div>'+
+  '<div style="margin-top:16px">'+vArtes(ev.artes,aberto)+'</div>'+
+  (aberto?'<div class="demo" style="margin-top:20px"><span class="eyebrow">Só na demonstração</span><button class="btn sm" data-act="sim-resp"'+(c.pendente?'':' disabled')+'>Simular respostas</button><button class="btn sm" data-act="sim-ci"'+(ev.checkinAberto?'':' disabled')+'>Simular check-ins</button></div>':'')+
+  '<section style="margin-top:36px"><div class="spread" style="margin-bottom:14px"><h2>Lista de presença</h2><div class="chips">'+filtros.map(f=>'<button class="chip" data-act="filtro" data-v="'+f[0]+'" aria-pressed="'+(view.filtro===f[0])+'">'+f[1]+' '+f[2]+'</button>').join('')+'</div></div>'+
+  (lista.length?'<div class="tbl"><table><thead><tr><th>Membro</th><th>Resposta</th><th>Check-in</th><th class="num">Pontos no evento</th></tr></thead><tbody>'+
+  lista.map(x=>'<tr class="clk" data-act="member" data-v="'+x.m.id+'"><td><div class="cellp"><span class="av sm" aria-hidden="true">'+esc(iniciais(x.m.nome))+'</span><div><b>'+esc(x.m.nome)+'</b><div class="small muted">'+esc(x.m.empresa)+'</div></div></div></td><td><span class="badge '+ST[x.i.status][1]+'">'+ST[x.i.status][0]+'</span></td><td>'+(x.i.checkin?'<span class="badge b-info">Presente</span>':ev.checkinAberto?'<button class="btn sm" data-act="manual" data-v="'+x.m.id+'">Marcar presença</button>':'')+'</td><td class="num"><span class="p '+(x.p<0?'neg':x.p>0?'pos':'')+'">'+(x.p>0?'+':'')+x.p+'</span></td></tr>').join('')+
+  '</tbody></table></div>':'<p class="empty">Ninguém neste filtro.</p>')+'</section>';
+}
+
+/* artes: uma imagem opcional por etapa de mensagem do evento */
+const ARTES=[['convite','Convite','Vai junto com o convite do evento.'],['cobranca','Cobrança de resposta','Para quem ainda não respondeu.'],['lembrete','Lembrete','Antes do evento, para quem vai ou respondeu talvez.'],['pontos','Pontos','Quando o membro faz o check-in e no agradecimento ao encerrar.']];
+const arteAlvo=()=>view.novo?draft:evento(view.eventId);
+const arteImg=x=>{if(!x.arte)return'';const e=evento(x.eventId);const src=e&&e.artes&&e.artes[x.arte];return src?'<img class="mi" src="'+src+'" alt="Arte da mensagem">':''};
+function vArtes(artes,editar){artes=artes||{};
+  return '<section class="card"><h2>Artes das mensagens</h2><p class="small muted" style="margin:2px 0 14px">Opcional. Cada imagem vai junto com a mensagem daquela etapa.</p><div class="artes">'+
+  ARTES.map(a=>'<div class="arte">'+(artes[a[0]]?'<img class="th" src="'+artes[a[0]]+'" alt="Arte: '+a[1]+'">':'<span class="th" aria-hidden="true"></span>')+
+    '<div><b>'+a[1]+'</b><span class="small muted">'+a[2]+'</span>'+(editar?'<div class="row"><label class="btn sm" tabindex="0">'+(artes[a[0]]?'Trocar':'Escolher imagem')+'<input type="file" accept="image/*" data-arte="'+a[0]+'" hidden></label>'+(artes[a[0]]?'<button class="btn sm quiet" type="button" data-act="arte-del" data-v="'+a[0]+'">Remover</button>':'')+'</div>':(artes[a[0]]?'':'<span class="small muted">Sem arte.</span>'))+'</div></div>').join('')+'</div></section>';
+}
+/* reduz a imagem antes de guardar, para caber no armazenamento do navegador */
+function lerArte(file,cb){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,720/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+  const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.82))};im.onerror=()=>cb(null);im.src=r.result};r.onerror=()=>cb(null);r.readAsDataURL(file)}
+function tagsAll(){const s=new Set();S.members.forEach(m=>m.tags.forEach(t=>s.add(t)));return['Todos'].concat(Array.from(s).sort())}
+function vNovo(){
+  if(!draft)draft={nome:'',data:'',hora:'19:00',local:'',descricao:'',tag:'Todos',busca:'',artes:{},sel:new Set(S.members.filter(m=>m.optin).map(m=>m.id))};
+  const f=(id,lab,type,full,ph)=>'<div class="field'+(full?' full':'')+'"><label for="f-'+id+'">'+lab+'</label><input id="f-'+id+'" type="'+type+'" data-bind="'+id+'" value="'+esc(draft[id])+'"'+(ph?' placeholder="'+ph+'"':'')+'></div>';
+  return '<button class="link small" data-act="back">Voltar para eventos</button><div class="head" style="margin-top:10px"><h1>Novo evento</h1></div>'+
+  '<div class="form-grid"><div class="stack"><section class="card"><h2 style="margin-bottom:16px">Dados do evento</h2><div class="fields">'+
+  f('nome','Nome do evento','text',true,'Ex.: Encontro de Networking Curitiba')+f('data','Data','date')+f('hora','Horário','time')+f('local','Local','text',true,'Cidade ou endereço')+
+  '<div class="field full"><label for="f-descricao">Descrição curta</label><textarea id="f-descricao" data-bind="descricao" placeholder="Aparece no convite">'+esc(draft.descricao)+'</textarea></div></div></section>'+vArtes(draft.artes,true)+
+  '<section class="card"><div class="spread" style="margin-bottom:14px"><h2>Convidados</h2><span class="small muted" id="selcount"></span></div>'+
+  '<div class="chips" style="margin-bottom:12px">'+tagsAll().map(t=>'<button class="chip" data-act="tag" data-v="'+esc(t)+'" aria-pressed="'+(draft.tag===t)+'">'+esc(t)+'</button>').join('')+'</div>'+
+  '<div class="row" style="margin-bottom:12px"><input type="search" data-bind="busca" placeholder="Buscar por nome ou empresa" value="'+esc(draft.busca)+'" style="flex:1;min-width:180px" aria-label="Buscar convidados"><button class="btn" data-act="sel-all">Marcar visíveis</button><button class="btn" data-act="sel-none">Desmarcar visíveis</button></div>'+
+  '<div class="recips" id="recips"></div></section></div>'+
+  '<div class="stack"><section class="card"><h2 style="margin-bottom:16px">Como o convite chega</h2><div style="background:var(--chat);border:1px solid var(--line);border-radius:12px;padding:14px" id="preview"></div><p class="small muted" style="margin:14px 0 0">No sistema real esta mensagem é um modelo aprovado pela Meta. O nome, a data e o local entram como variáveis.</p></section>'+
+  '<section class="card"><p class="err" id="ferr" role="alert"></p><button class="btn primary" data-act="enviar" style="width:100%;height:46px" id="sendbtn">Criar e enviar convite</button></section></div></div>';
+}
+function visiveis(){const q=norm(draft.busca);return S.members.filter(m=>(draft.tag==='Todos'||m.tags.includes(draft.tag))&&(!q||norm(m.nome+' '+m.empresa).includes(q)))}
+function updDraft(){
+  const rc=document.getElementById('recips');if(!rc)return;
+  const vs=visiveis();
+  rc.innerHTML=vs.length?vs.map(m=>'<label class="recip'+(m.optin?'':' off')+'"><input type="checkbox" data-sel="'+m.id+'"'+(draft.sel.has(m.id)&&m.optin?' checked':'')+(m.optin?'':' disabled')+'><span class="rn"><span>'+esc(m.nome)+'</span><span class="small muted">, '+esc(m.empresa)+'</span></span>'+(m.optin?'<span class="small muted">'+esc(m.tags[0])+'</span>':'<span class="badge b-wait">Saiu da lista</span>')+'</label>').join(''):'<p class="empty">Ninguém encontrado com esse filtro.</p>';
+  const n=Array.from(draft.sel).filter(id=>member(id)&&member(id).optin).length;
+  document.getElementById('selcount').textContent=pl(n,'selecionado','selecionados');
+  document.getElementById('sendbtn').textContent='Criar e enviar convite para '+n;
+  const ex={nome:draft.nome||'Nome do evento',data:draft.data||iso(Date.now()+30*DIA),hora:draft.hora||'19:00',local:draft.local||'Local',descricao:draft.descricao};
+  const first=Array.from(draft.sel).map(member).find(m=>m&&m.optin);
+  document.getElementById('preview').innerHTML='<div class="msg bot" style="max-width:100%">'+(draft.artes.convite?'<img class="mi" src="'+draft.artes.convite+'" alt="Arte do convite">':'')+esc(conviteTexto(ex,first?first.nome:'Ana'))+'<div class="btns"><button disabled>Vou</button><button disabled>Não vou</button><button disabled>Talvez</button></div></div>';
+}
+
+function vMembros(){
+  const q=norm(view.buscaMembro);const pos={};ranking().forEach(x=>pos[x.m.id]=x);const ir=view.importRes;
+  const ms=S.members.filter(m=>!q||norm(m.nome+' '+m.empresa).includes(q)).sort((a,b)=>a.nome.localeCompare(b.nome));
+  return '<div class="head"><h1>Membros</h1><div class="row"><button class="btn" data-act="exp-modelo">Baixar modelo</button><label class="btn" data-papel-esc="1" tabindex="0">Importar planilha<input type="file" id="csvfile" accept=".csv,text/csv" hidden></label><button class="btn primary" data-act="add-toggle">'+(view.addMember?'Cancelar':'Adicionar membro')+'</button></div></div>'+
+  (ir?'<section class="card" style="margin-bottom:16px"><div class="spread"><div>'+(ir.erro?'<b style="color:var(--bad)">Não foi possível importar.</b> '+esc(ir.erro):'<b style="color:var(--ink)">Planilha importada.</b> '+pl(ir.novos,'membro novo','membros novos')+', '+pl(ir.dup,'repetido ignorado','repetidos ignorados')+' (mesmo telefone), '+pl(ir.inv,'linha inválida','linhas inválidas')+'.'+(ir.semAut?' '+pl(ir.semAut,'entrou','entraram')+' sem autorização de WhatsApp e não recebe convite até autorizar.':''))+'</div><button class="btn sm quiet" data-act="imp-fechar">Fechar</button></div></section>':'')+
+  (view.addMember?'<section class="card" style="margin-bottom:16px"><form id="addform" class="fields"><div class="field"><label for="a-nome">Nome</label><input id="a-nome" type="text" name="nome" required></div><div class="field"><label for="a-tel">Telefone</label><input id="a-tel" type="tel" name="tel" placeholder="(11) 90000-0000" required></div><div class="field"><label for="a-emp">Empresa</label><input id="a-emp" type="text" name="emp"></div><div class="field"><label for="a-tags">Turma e cidade</label><input id="a-tags" type="text" name="tags" placeholder="Turma 2026, São Paulo"></div><label class="row" style="grid-column:1/-1"><input type="checkbox" name="optin" checked> Autorizou receber mensagens do Pontua pelo WhatsApp</label><div style="grid-column:1/-1"><button class="btn primary" type="submit">Salvar membro</button></div></form></section>':'')+
+  '<div class="row" style="margin-bottom:12px"><input type="search" id="buscaMembro" placeholder="Buscar por nome ou empresa" value="'+esc(view.buscaMembro)+'" style="max-width:340px" aria-label="Buscar membros"><span class="small muted">'+pl(ms.length,'membro','membros')+'. A planilha é CSV com as colunas nome, telefone, empresa, cargo, turma, cidade e autorizou.</span></div>'+
+  (ms.length?'<div class="tbl"><table><thead><tr><th>Membro</th><th>Turma e cidade</th><th>Nível</th><th>WhatsApp</th><th class="num">Pontos</th></tr></thead><tbody>'+
+  ms.map(m=>{const n=nivel(pos[m.id].p);return '<tr class="clk" data-act="member" data-v="'+m.id+'"><td><div class="cellp"><div><b>'+esc(m.nome)+'</b><div class="small muted">'+esc(m.cargo)+', '+esc(m.empresa)+'</div></div></div></td><td class="small">'+esc(m.tags.join(', '))+'</td><td class="niv">'+n[1]+'</td><td>'+(m.optin?'<span class="badge b-ok">Autorizado</span>':'<span class="badge b-wait">'+(m.optoutEm?'Saiu da lista':'Sem autorização')+'</span>')+'</td><td class="num"><span class="pts">'+pos[m.id].p+'</span></td></tr>'}).join('')+
+  '</tbody></table></div>':'<p class="empty">Ninguém encontrado com essa busca.</p>');
+}
+
+function vDrawer(){
+  const m=member(view.drawer);if(!m)return'';const r=ranking().find(x=>x.m.id===m.id);const n=nivel(r.p);
+  const h=S.ledger.filter(l=>l.memberId===m.id).sort((a,b)=>b.ts-a.ts);
+  const f=(name,lab,val,type)=>'<div class="field full"><label for="e-'+name+'">'+lab+'</label><input id="e-'+name+'" name="'+name+'" type="'+(type||'text')+'" value="'+esc(val)+'"'+(name==='nome'||name==='tel'?' required':'')+'></div>';
+  const lgpd=m.optin?'Autorizou o WhatsApp em '+(m.optinEm?fmtData(iso(m.optinEm)):'data não registrada')+(m.optinOrigem?', por '+m.optinOrigem:'')+'.':m.optoutEm?'Pediu para sair da lista em '+fmtData(iso(m.optoutEm))+'.':'Ainda não autorizou receber mensagens.';
+  return '<div class="scrim" data-act="close-drawer"></div><aside class="drawer" role="dialog" aria-label="Detalhes do membro"><div class="spread"><span class="small muted">Membro</span><div class="row">'+(view.editMember?'':'<button class="btn sm" data-act="edit-member">Editar</button>')+'<button class="btn sm quiet" data-act="close-drawer">Fechar</button></div></div>'+
+  (view.editMember?'<form id="memberform" class="fields" style="margin-top:12px">'+f('nome','Nome',m.nome)+f('cargo','Cargo',m.cargo)+f('emp','Empresa',m.empresa)+f('tel','Telefone',m.telefone,'tel')+f('tags','Turma e cidade, separados por vírgula',m.tags.join(', '))+
+    '<label class="row" style="grid-column:1/-1"><input type="checkbox" name="optin"'+(m.optin?' checked':'')+'> Pode receber mensagens pelo WhatsApp</label><label class="row" style="grid-column:1/-1"><input type="checkbox" name="oculto"'+(m.oculto?' checked':'')+'> Ocultar o nome no ranking que os outros membros veem</label><div class="row" style="grid-column:1/-1"><button class="btn primary" type="submit">Salvar</button><button class="btn" type="button" data-act="edit-member">Cancelar</button></div></form>':
+  '<h1>'+esc(m.nome)+'</h1><p class="muted" style="margin:0 0 8px">'+esc(m.cargo)+', '+esc(m.empresa)+'<br>'+esc(m.telefone)+'<br>'+esc(m.tags.join(', '))+'</p><div class="row"><span class="niv">'+n[1]+(n[3]?': '+esc(n[3]):'')+'</span></div><p class="small muted" style="margin:8px 0 0">'+esc(lgpd)+(m.oculto?' Nome oculto no ranking dos membros.':'')+'</p>')+
+  '<div class="mini"><div><b>'+r.p+'</b><span>pontos</span></div><div><b>'+r.pos+'º</b><span>no ranking geral</span></div><div><b>'+r.pres+'</b><span>presenças</span></div><div><b>'+(r.conf?Math.round((r.conf-r.faltas)/r.conf*100)+'%':'n/d')+'</b><span>cumpre o que confirma</span></div></div>'+
+  '<button class="btn" data-act="chat-with" data-v="'+m.id+'">'+I.fone+'Ver conversa no simulador</button>'+
+  (S.cfg.extras.length?'<div data-bloco="extras"><h2 style="margin-top:22px">Pontos extras</h2><div class="row" style="margin-top:8px">'+S.cfg.extras.map((x,i)=>'<button class="btn sm" data-act="extra" data-v="'+i+'">'+esc(x.nome)+' (+'+x.pts+')</button>').join('')+'</div></div>':'')+
+  '<div data-bloco="ajuste"><h2 style="margin-top:22px">Ajuste manual de pontos</h2><form id="ajusteform" class="row" style="margin-top:8px"><input type="number" name="v" step="1" placeholder="10 ou -10" required style="width:104px" aria-label="Pontos, positivo ou negativo"><input type="text" name="motivo" placeholder="Motivo (fica no histórico)" required style="flex:1;min-width:140px" aria-label="Motivo"><button class="btn" type="submit">Lançar</button></form><p class="err" id="aerr" role="alert" style="margin:6px 0 0"></p></div>'+
+  '<h2 style="margin-top:22px">Histórico de pontos</h2>'+(h.length?'<ul class="list">'+h.map(l=>'<li><div>'+esc(l.desc)+'<small>'+fmtRel(l.ts)+'</small></div><span class="p '+(l.pontos<0?'neg':'pos')+'">'+(l.pontos>0?'+':'')+l.pontos+'</span></li>').join('')+'</ul>':'<p class="muted">Nenhum ponto ainda.</p>')+
+  '<div data-bloco="lgpd"><h2 style="margin-top:22px">Dados pessoais (LGPD)</h2><p class="small muted" style="margin:4px 0 8px">Use quando o membro pedir uma cópia dos dados dele ou pedir para ser apagado.</p><div class="row"><button class="btn sm" data-act="lgpd-exp" data-v="'+m.id+'">Exportar dados do membro</button><button class="btn sm danger" data-act="lgpd-del" data-v="'+m.id+'">Apagar dados</button></div></div></aside>';
+}
+
+function vDock(entrou){
+  const ms=S.members.slice().sort((a,b)=>a.nome.localeCompare(b.nome));
+  if(!view.chatMember||!member(view.chatMember))view.chatMember=ms[0].id;
+  const m=member(view.chatMember);const msgs=S.chats[m.id]||[];
+  const evAberto=S.events.find(e=>e.status==='aberto'&&e.checkinAberto);
+  return '<aside class="dock'+(entrou?' in':'')+'" aria-label="Simulador do WhatsApp"><div class="spread"><span class="eyebrow">O que o membro vê</span><button class="btn sm quiet" data-act="dock">Fechar</button></div>'+
+  '<select id="docksel" aria-label="Escolher membro">'+ms.map(x=>'<option value="'+x.id+'"'+(x.id===m.id?' selected':'')+'>'+esc(x.nome)+', '+pontos(x.id)+' pts'+(x.optin?'':' (saiu da lista)')+'</option>').join('')+'</select>'+
+  '<div class="phone"><div class="phone-head"><div class="cellp"><span class="av" aria-hidden="true">P</span><div><b>Pontua</b><div class="small muted">Celular de '+esc(primeiro(m.nome))+'</div></div></div><span class="badge b-info">'+pontos(m.id)+' pts</span></div>'+
+  '<div class="msgs" id="msgs">'+(msgs.length?msgs.map(x=>{let b='';
+    if(x.buttons){const ev=evento(x.eventId);const ok=ev&&ev.status==='aberto';b='<div class="btns">'+x.buttons.map(l=>'<button data-act="chat-btn" data-ev="'+x.eventId+'" data-v="'+esc(l)+'"'+(ok?'':' disabled')+'>'+esc(l)+'</button>').join('')+'</div>'}
+    return '<div class="msg '+x.from+'">'+arteImg(x)+esc(x.text)+b+'</div>'}).join(''):'<p class="empty">Nenhuma mensagem ainda. Os convites aparecem aqui quando um evento é enviado para este membro.</p>')+'</div>'+
+  '<div class="composer"><div class="quick"><button class="chip" data-act="cmd" data-v="PONTOS">PONTOS</button><button class="chip" data-act="cmd" data-v="RANKING">RANKING</button><button class="chip" data-act="cmd" data-v="AJUDA">AJUDA</button>'+(evAberto?'<button class="chip" data-act="cmd" data-v="CHECKIN '+evAberto.codigo+'">Escanear QR</button>':'')+'</div>'+
+  '<form id="chatform"><input type="text" id="chatin" placeholder="Mensagem" autocomplete="off" aria-label="Mensagem"><button class="btn primary sm" type="submit" style="height:40px">Enviar</button></form></div></div></aside>';
+}
+
+function vTelao(){
+  const ev=evento(view.telao);if(!ev||!ev.checkinAberto){view.telao=null;return''}
+  const c=contagem(ev);
+  const ult=S.ledger.filter(l=>l.eventId===ev.id&&l.tipo==='checkin').sort((a,b)=>b.ts-a.ts).slice(0,5);
+  return '<div class="telao" role="dialog" aria-label="Modo telão do check-in"><button class="btn quiet x" data-act="close-telao">Sair do telão</button>'+
+  '<div class="qr" id="qr-big"></div><div><span class="eyebrow">Check-in aberto</span><h1>'+esc(ev.nome)+'</h1><p class="muted" style="margin:0 0 10px;font-size:18px">Aponte a câmera para o QR code e toque em enviar no WhatsApp.</p><div class="code">CHECKIN '+codigoAtual(ev)+'</div>'+(S.cfg.qrRot?'<p class="small muted" style="margin:6px 0 0">O código muda a cada minuto. <span id="qrcount"></span></p>':'')+
+  '<div class="cnt"><b>'+c.checkin+'</b><span>'+(c.checkin===1?'presente':'presentes')+' de '+c.confirmado+' confirmados</span></div>'+
+  (ult.length?'<span class="eyebrow">Acabaram de chegar</span><ul class="list">'+ult.map(l=>{const m=member(l.memberId);return '<li><div>'+esc(m?m.nome:'')+'<small>'+esc(m?m.empresa:'')+'</small></div></li>'}).join('')+'</ul>':'<p class="muted">Os nomes aparecem aqui conforme o pessoal chega.</p>')+
+  '<div class="demo" style="margin-top:26px;display:inline-flex"><span class="eyebrow">Só na demonstração</span><button class="btn sm" data-act="sim-um" data-ev="'+ev.id+'">Simular uma chegada</button></div></div></div>';
+}
+
+/* usuários do painel e perfis de acesso */
+const PAPEL={admin:'Administrador',organizador:'Organizador',leitura:'Leitura'};
+const USERS0=()=>[{id:'u1',nome:'Rafael Lima',email:'admin@exemplo.com',papel:'admin',ativo:true,ultimo:Date.now()},{id:'u2',nome:'Marina Castro',email:'marina@exemplo.com',papel:'organizador',ativo:true,ultimo:Date.now()-2*DIA}];
+const me=()=>S.users.find(u=>u.id===S.me)||S.users[0];
+const adminsAtivos=()=>S.users.filter(u=>u.papel==='admin'&&u.ativo).length;
+const SO_ADMIN=new Set(['cfg-reset','user-new','user-toggle','user-del']);
+const ESCRITA=new Set(['novo','enviar','lembrete','cobrar','toggle-ci','manual','encerrar','add-toggle','edit-member','edit-event','sim-resp','sim-ci','sim-um','sel-all','sel-none','arte-del']);
+const FORM_SO_ADMIN=new Set(['cfgform','userform','ajusteform']);
+function vUsuarios(){
+  const eu=me();
+  return '<div class="head"><div><h1>Usuários</h1><p class="lead">Quem pode entrar no painel. Os membros não aparecem aqui: eles só usam o WhatsApp.</p></div><button class="btn primary" data-act="user-new">'+(view.addUser?'Cancelar':'Novo usuário')+'</button></div>'+
+  (view.addUser?'<section class="card" style="margin-bottom:16px"><form id="userform" class="fields" novalidate><div class="field"><label for="u-nome">Nome</label><input id="u-nome" name="nome" type="text" required></div><div class="field"><label for="u-email">E-mail</label><input id="u-email" name="email" type="text" inputmode="email" autocomplete="off" required></div><div class="field"><label for="u-papel">Perfil</label><select id="u-papel" name="papel">'+Object.keys(PAPEL).map(k=>'<option value="'+k+'"'+(k==='organizador'?' selected':'')+'>'+PAPEL[k]+'</option>').join('')+'</select></div><div class="field" style="justify-content:flex-end"><p class="err" id="uerr" role="alert" style="margin:0 0 6px"></p><div><button class="btn primary" type="submit">Criar e enviar convite</button></div></div><p class="small muted" style="grid-column:1/-1;margin:0">No sistema real a pessoa recebe um e-mail para criar a própria senha.</p></form></section>':'')+
+  '<div class="tbl"><table><thead><tr><th>Usuário</th><th>Perfil</th><th>Situação</th><th>Último acesso</th><th></th></tr></thead><tbody>'+
+  S.users.map(u=>'<tr><td><b style="font-weight:500;color:var(--ink)">'+esc(u.nome)+(u.id===eu.id?' (você)':'')+'</b><div class="small muted">'+esc(u.email)+'</div></td>'+
+    '<td><select class="inl" data-papel="'+u.id+'" aria-label="Perfil de '+esc(u.nome)+'">'+Object.keys(PAPEL).map(k=>'<option value="'+k+'"'+(u.papel===k?' selected':'')+'>'+PAPEL[k]+'</option>').join('')+'</select></td>'+
+    '<td>'+(u.ativo?'<span class="badge b-ok">Ativo</span>':'<span class="badge b-wait">Desativado</span>')+'</td>'+
+    '<td class="small muted">'+(u.id===eu.id?'agora':u.ultimo?fmtRel(u.ultimo):'ainda não entrou')+'</td>'+
+    '<td class="num">'+(u.id===eu.id?'':'<button class="btn sm" data-act="user-toggle" data-v="'+u.id+'">'+(u.ativo?'Desativar':'Reativar')+'</button> <button class="btn sm danger" data-act="user-del" data-v="'+u.id+'">Remover</button>')+'</td></tr>').join('')+
+  '</tbody></table></div>'+
+  '<section class="card" style="margin-top:16px"><h2>O que cada perfil pode fazer</h2><table style="margin-top:6px;min-width:0"><thead><tr><th style="background:none;padding-left:0"></th><th style="background:none">Administrador</th><th style="background:none">Organizador</th><th style="background:none">Leitura</th></tr></thead><tbody>'+
+  [['Ver painel, eventos, ranking e membros',1,1,1],['Criar evento, enviar convite, cobrar e lembrar',1,1,0],['Abrir check-in, marcar presença e encerrar evento',1,1,0],['Cadastrar e editar membros',1,1,0],['Ajustar pontos manualmente',1,0,0],['Mudar regras e mensagens',1,0,0],['Criar, desativar e remover usuários',1,0,0]].map(l=>'<tr><td style="padding-left:0">'+l[0]+'</td>'+l.slice(1).map(x=>'<td>'+(x?'Sim':'<span class="muted">Não</span>')+'</td>').join('')+'</tr>').join('')+
+  '</tbody></table><p class="note">Para testar, troque o usuário em "Ver como", no topo da tela.</p></section>';
+}
+
+function vAuditoria(){
+  const a=S.audit||[];
+  return '<div class="head"><div><h1>Auditoria</h1><p class="lead">Tudo o que os usuários do painel fizeram, do mais recente para o mais antigo. Este registro não pode ser editado.</p></div><button class="btn" data-act="exp-audit">Exportar planilha</button></div>'+
+  (a.length?'<div class="tbl"><table><thead><tr><th style="width:170px">Quando</th><th style="width:200px">Quem</th><th>O que fez</th></tr></thead><tbody>'+
+  a.map(x=>{const d=new Date(x.ts);return '<tr><td class="small muted">'+fmtData(iso(x.ts))+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'</td><td>'+esc(x.quem)+'</td><td>'+esc(x.acao)+'</td></tr>'}).join('')+'</tbody></table></div>':
+  '<p class="empty">Nada registrado ainda. Crie um evento, mude uma regra ou edite um membro e a ação aparece aqui.</p>');
+}
+
+function vRegras(){
+  const c=S.cfg;
+  const n=(name,lab,val,hint,step)=>'<div class="field"><label for="c-'+name+'">'+lab+'</label><input id="c-'+name+'" name="'+name+'" type="number" step="'+(step||1)+'" min="0" value="'+val+'" required>'+(hint?'<span class="small muted">'+hint+'</span>':'')+'</div>';
+  const tx=(name,lab,val,ph)=>'<div class="field"><label for="c-'+name+'">'+lab+'</label><input id="c-'+name+'" name="'+name+'" type="text" value="'+esc(val)+'"'+(ph?' placeholder="'+ph+'"':'')+'></div>';
+  const ta=(name,lab,val)=>'<div class="field full"><label for="c-'+name+'">'+lab+'</label><textarea id="c-'+name+'" name="'+name+'" rows="3" required>'+esc(val)+'</textarea></div>';
+  const ck=(name,lab,on)=>'<label class="row" style="grid-column:1/-1"><input type="checkbox" name="'+name+'"'+(on?' checked':'')+'> '+lab+'</label>';
+  const ex=[0,1,2,3].map(i=>c.extras[i]||{nome:'',pts:''});
+  return '<form id="cfgform" novalidate><div class="head"><div><h1>Regras</h1><p class="lead">O que você salvar aqui vale para os próximos lançamentos. Pontos já lançados não são recalculados.</p></div><div class="row" data-bloco="cfgbtn"><button class="btn" type="button" data-act="cfg-reset">Restaurar padrão</button><button class="btn primary" type="submit">Salvar regras</button></div></div>'+
+  '<p class="err" id="cerr" role="alert"></p>'+
+  '<div class="rules"><div class="stack">'+
+  '<section class="card"><h2>Pontos</h2><div class="fields" style="margin-top:10px">'+
+    n('resposta','Responder o convite',c.pts.resposta,'Uma vez por evento, qualquer resposta.')+n('checkin','Fazer check-in',c.pts.checkin)+
+    n('bonus','Bônus por confirmar e ir',c.pts.bonus)+n('falta','Perde ao confirmar e faltar',Math.abs(c.pts.falta),'Digite sem o sinal de menos.')+
+    n('prazo','Prazo para desistir (horas antes)',c.prazo,'Depois desse prazo, trocar para Não vou não livra da falta.')+
+  '</div><p class="note">Confirmar sozinho não dá pontos. Empate é decidido pelo número de presenças.</p></section>'+
+  '<section class="card"><h2>Pontos extras</h2><p class="small muted" style="margin:4px 0 10px">Viram botões na ficha de cada membro. Deixe o nome em branco para remover.</p><div class="fields">'+
+    ex.map((x,i)=>tx('xn'+i,'Motivo '+(i+1),x.nome,'Ex.: Palestrou em um evento')+'<div class="field"><label for="c-xp'+i+'">Pontos</label><input id="c-xp'+i+'" name="xp'+i+'" type="number" step="1" min="0" value="'+x.pts+'"></div>').join('')+
+  '</div></section>'+
+  '<section class="card"><h2>Níveis e o que cada um ganha</h2><div class="fields" style="margin-top:10px">'+
+    c.niv.map((x,i)=>tx('nn'+i,'Nome do nível '+(3-i),x.n)+(i<2?n('nm'+i,'A partir de quantos pontos',x.min):'<div class="field"><label>A partir de quantos pontos</label><input type="number" value="0" disabled></div>')+
+      '<div class="field full"><label for="c-nb'+i+'">Benefício do nível '+(3-i)+'</label><input id="c-nb'+i+'" name="nb'+i+'" type="text" value="'+esc(x.ben||'')+'" placeholder="O que o membro ganha ao chegar aqui"></div>').join('')+
+  '</div><p class="note">O nível usa o saldo total e não zera na virada da temporada. O benefício aparece para o membro quando ele manda PONTOS.</p></section>'+
+  '<section class="card"><h2>Mensagens do WhatsApp</h2><p class="small muted" style="margin:4px 0 10px">Variáveis: {nome} {evento} {data} {hora} {local} {descricao} {pontos_resposta} {pontos_checkin}. Na mensagem pós-evento também valem {pontos_evento} e {posicao}; na de falta, {pontos_falta}. No sistema real, cada mudança de texto precisa ser aprovada de novo pela Meta.</p><div class="fields">'+
+    ta('convite','Convite',c.msg.convite)+ta('cobranca','Cobrança de resposta',c.msg.cobranca)+ta('lembrete','Lembrete',c.msg.lembrete)+ta('pos','Depois do evento, para quem foi',c.msg.pos)+ta('mfalta','Depois do evento, para quem confirmou e faltou',c.msg.falta)+
+  '</div></section></div>'+
+  '<div class="stack">'+
+  '<section class="card"><h2>Temporada do ranking</h2><div class="fields" style="margin-top:10px"><div class="field full"><label for="c-temporada">O ranking zera a cada</label><select id="c-temporada" name="temporada"><option value="semestre"'+(c.temporada==='semestre'?' selected':'')+'>Semestre</option><option value="ano"'+(c.temporada==='ano'?' selected':'')+'>Ano</option></select></div></div><p class="note">O ranking geral, com tudo somado, continua disponível na tela Ranking.</p></section>'+
+  '<section class="card"><h2>Check-in</h2><div class="fields" style="margin-top:10px">'+
+    n('antes','Abre antes do início (min)',c.ci.antes)+n('depois','Fecha depois do início (min)',c.ci.depois)+ck('qrRot','Trocar o código do QR a cada minuto, para a foto do QR não servir para quem está em casa',c.qrRot)+
+  '</div></section>'+
+  '<section class="card"><h2>Envios automáticos</h2><div class="fields" style="margin-top:10px">'+ck('lembAtivo','Lembrete para quem vai ou respondeu talvez',c.lembrete.ativo)+n('horas','Quantas horas antes do evento',c.lembrete.horas)+'<div></div>'+
+    ck('pos','Ao encerrar, agradecer quem foi (com pontos e posição) e avisar quem faltou',c.pos)+'</div></section>'+
+  '<section class="card"><h2>Custo das mensagens</h2><div class="fields" style="margin-top:10px">'+n('custo','Custo por mensagem de modelo (R$)',c.custo,'',0.01)+'</div><p class="note">Valor de referência para a estimativa que aparece antes de enviar convites. Confira a tabela atual da Meta e ajuste aqui.</p></section>'+
+  '<section class="card"><h2>Comandos que o membro pode mandar</h2><table><tbody>'+
+  '<tr><td class="cmd">PONTOS</td><td>Saldo, nível, posição e últimos lançamentos</td></tr><tr><td class="cmd">RANKING</td><td>Cinco primeiros da temporada e a posição do membro</td></tr><tr><td class="cmd">OCULTAR</td><td>Esconde o nome dele no ranking dos outros (MOSTRAR desfaz)</td></tr><tr><td class="cmd">CHECKIN código</td><td>Enviado pelo QR code no dia do evento</td></tr><tr><td class="cmd">AJUDA</td><td>Lista os comandos</td></tr><tr><td class="cmd">SAIR</td><td>Para de receber convites (VOLTAR desfaz)</td></tr></tbody></table><p class="note">Os comandos são fixos nesta versão.</p></section>'+
+  '</div></div></form>';
+}
+
+/* eventos de interface */
+document.addEventListener('click',e=>{
+  const sel=e.target.closest('[data-sel]');
+  if(sel){const id=sel.getAttribute('data-sel');if(sel.checked)draft.sel.add(id);else draft.sel.delete(id);updDraft();return}
+  const t=e.target.closest('[data-act]');if(!t)return;
+  const a=t.dataset.act,v=t.dataset.v;
+  if(a==='login-voltar'){loginSt.passo=1;loginSt.erro='';loginSt.marca='';render();return}
+  if(a==='sair'){sair();return}
+  const papel=me().papel;
+  if(papel!=='admin'&&(SO_ADMIN.has(a)||(a==='tab'&&v==='usuarios'))){toast('Só administradores podem fazer isso');return}
+  if(papel==='leitura'&&ESCRITA.has(a)){toast('Seu perfil é só de leitura');return}
+  if(a==='user-new'){view.addUser=!view.addUser;render();return}
+  if(a==='user-toggle'||a==='user-del'){const u=S.users.find(x=>x.id===v);if(!u||u.id===me().id)return;
+    if(u.papel==='admin'&&u.ativo&&adminsAtivos()===1){toast('Precisa existir pelo menos um administrador ativo');return}
+    if(a==='user-toggle'){u.ativo=!u.ativo;render();toast(u.nome+(u.ativo?' reativado':' desativado'));return}
+    if(!confirm('Remover '+u.nome+'? A pessoa perde o acesso ao painel.'))return;
+    S.users=S.users.filter(x=>x.id!==v);render();toast(u.nome+' removido');return}
+  if(a==='tab'){view.tab=v;view.novo=false;view.eventId=null;view.drawer=null;render();window.scrollTo(0,0);return}
+  if(a==='reset'){if(confirm('Restaurar os dados de exemplo? As mudanças feitas na demonstração serão perdidas.')){seed();draft=null;const d=view.dock;view=VIEW0();view.dock=d;render();toast('Dados de exemplo restaurados')}return}
+  if(a==='dock'){view.dock=!view.dock;render();return}
+  if(a==='open-ev'){view.tab='eventos';view.eventId=v;view.novo=false;view.filtro='todos';view.editEvent=false;render();window.scrollTo(0,0);return}
+  if(a==='back'){view.eventId=null;view.novo=false;view.editEvent=false;render();return}
+  if(a==='novo'){view.tab='eventos';view.novo=true;view.eventId=null;draft=null;render();window.scrollTo(0,0);return}
+  if(a==='arte-del'){const al=arteAlvo();if(al&&al.artes){delete al.artes[v];render()}return}
+  if(a==='rk-tag'){view.rkTag=v;render();return}
+  if(a==='filtro'){view.filtro=v;render();return}
+  if(a==='tag'){draft.tag=v;document.querySelectorAll('.chip[data-act="tag"]').forEach(c=>c.setAttribute('aria-pressed',c.dataset.v===v));updDraft();return}
+  if(a==='sel-all'){visiveis().filter(m=>m.optin).forEach(m=>draft.sel.add(m.id));updDraft();return}
+  if(a==='sel-none'){visiveis().forEach(m=>draft.sel.delete(m.id));updDraft();return}
+  if(a==='enviar'){
+    const err=document.getElementById('ferr');const ids=Array.from(draft.sel).filter(id=>member(id)&&member(id).optin);
+    const falta=[];if(!draft.nome.trim())falta.push('nome');if(!draft.data)falta.push('data');if(!draft.hora)falta.push('horário');if(!draft.local.trim())falta.push('local');
+    if(falta.length){err.textContent='Preencha '+falta.join(', ')+' para enviar.';return}
+    if(!ids.length){err.textContent='Selecione pelo menos um convidado.';return}
+    const ev={id:'e'+uid(),nome:draft.nome.trim(),data:draft.data,hora:draft.hora,local:draft.local.trim(),descricao:draft.descricao.trim(),codigo:gerarCodigo(draft.local.trim(),draft.data),status:'aberto',checkinAberto:false,convidados:{},lembrete:null,cobranca:null,artes:draft.artes||{}};
+    S.events.push(ev);const n=enviarConvite(ev,ids);draft=null;view.novo=false;view.eventId=ev.id;view.filtro='todos';render();window.scrollTo(0,0);toast('Convite enviado para '+pl(n,'membro','membros'));return}
+  const ev=evento(t.dataset.ev||view.eventId);
+  if(a==='lembrete'&&ev){let n=0;Object.keys(ev.convidados).forEach(mid=>{const i=ev.convidados[mid];if(i.status==='confirmado'||i.status==='talvez'){pushChat(mid,{from:'bot',text:tpl(S.cfg.msg.lembrete,ev,member(mid).nome)+' '+(i.status==='talvez'?'Ainda dá tempo de confirmar no convite acima.':'Não esqueça do check-in na entrada para ganhar seus pontos.'),eventId:ev.id,arte:'lembrete'});n++}});ev.lembrete=Date.now();render();toast('Lembrete enviado para '+pl(n,'membro','membros'));return}
+  if(a==='cobrar'&&ev){let n=0;Object.keys(ev.convidados).forEach(mid=>{const i=ev.convidados[mid];const m=member(mid);if(i.status==='pendente'&&m&&m.optin){pushChat(mid,{from:'bot',text:tpl(S.cfg.msg.cobranca,ev,m.nome),buttons:['Vou','Não vou','Talvez'],eventId:ev.id,arte:'cobranca'});n++}});ev.cobranca=Date.now();render();toast('Cobrança enviada para '+pl(n,'membro','membros'));return}
+  if(a==='toggle-ci'&&ev){ev.checkinAberto=!ev.checkinAberto;if(!ev.checkinAberto)view.telao=null;render();toast(ev.checkinAberto?'Check-in aberto':'Check-in fechado');return}
+  if(a==='telao'&&ev){view.telao=ev.id;render();return}
+  if(a==='close-telao'){view.telao=null;render();return}
+  if(a==='manual'&&ev){const m=member(v);if(!m||ev.convidados[v].checkin)return;const g=doCheckin(ev,v);pushChat(v,{from:'bot',text:'Sua presença no '+ev.nome+' foi registrada pela organização. Você ganhou '+g+' pontos. Seu total agora é '+pontos(v)+'.',eventId:ev.id,arte:'pontos'});render();toast('Presença de '+primeiro(m.nome)+' registrada, +'+g+' pontos');return}
+  if(a==='sim-resp'&&ev){let n=0;Object.keys(ev.convidados).forEach(mid=>{const i=ev.convidados[mid];if(i.respondeu)return;const x=Math.random();if(x<.85){responder(ev.id,mid,x<.55?'Vou':x<.75?'Não vou':'Talvez');n++}});render();toast(pl(n,'resposta recebida','respostas recebidas'));return}
+  const chegar=mid=>{pushChat(mid,{from:'user',text:'CHECKIN '+ev.codigo});const g=doCheckin(ev,mid);pushChat(mid,{from:'bot',text:'Check-in feito no '+ev.nome+'. Você ganhou '+g+' pontos. Seu total agora é '+pontos(mid)+'.',eventId:ev.id,arte:'pontos'})};
+  if(a==='sim-ci'&&ev){let n=0;Object.keys(ev.convidados).forEach(mid=>{const i=ev.convidados[mid];if(i.checkin)return;const pr=i.status==='confirmado'?.8:i.status==='talvez'?.35:0;if(Math.random()<pr){chegar(mid);n++}});render();toast(pl(n,'check-in registrado','check-ins registrados'));return}
+  if(a==='sim-um'&&ev){const c=Object.keys(ev.convidados).filter(mid=>!ev.convidados[mid].checkin&&ev.convidados[mid].status!=='recusado');const f=c.filter(mid=>ev.convidados[mid].status==='confirmado');const pool=f.length?f:c;if(!pool.length){toast('Todos já chegaram');return}const mid=pool[Math.floor(Math.random()*pool.length)];chegar(mid);render();toast(member(mid).nome+' chegou');return}
+  if(a==='encerrar'&&ev){if(!confirm('Encerrar o evento? O check-in fecha e quem confirmou e faltou perde '+Math.abs(PTS.falta)+' pontos.'))return;const n=encerrar(ev);view.telao=null;render();toast('Evento encerrado. '+pl(n,'falta registrada','faltas registradas'));return}
+  if(a==='member'){view.drawer=v;view.editMember=false;render();return}
+  if(a==='close-drawer'){view.drawer=null;view.editMember=false;render();return}
+  if(a==='edit-member'){view.editMember=!view.editMember;render();return}
+  if(a==='edit-event'){view.editEvent=!view.editEvent;render();return}
+  if(a==='cfg-reset'){if(!confirm('Voltar todas as regras e mensagens para o padrão?'))return;S.cfg=CFG0();applyCfg();render();toast('Regras restauradas para o padrão');return}
+  if(a==='chat-with'){view.chatMember=v;view.drawer=null;view.dock=true;render();return}
+  if(a==='chat-btn'){responder(t.dataset.ev,view.chatMember,v);render();return}
+  if(a==='cmd'){processar(view.chatMember,v);render();return}
+  if(a==='add-toggle'){view.addMember=!view.addMember;render();return}
+});
+document.addEventListener('change',e=>{
+  if(e.target.dataset&&e.target.dataset.arte){const k=e.target.dataset.arte;const file=e.target.files&&e.target.files[0];const al=arteAlvo();if(!file||!al)return;
+    if(me().papel==='leitura'){toast('Seu perfil é só de leitura');return}
+    if(!/^image\//.test(file.type)){toast('Escolha um arquivo de imagem');return}
+    lerArte(file,src=>{if(!src){toast('Não foi possível ler a imagem');return}(al.artes||(al.artes={}))[k]=src;render();toast('Arte de '+ARTES.find(a=>a[0]===k)[1].toLowerCase()+' anexada')});return}
+  if(e.target.id==='docksel'){view.chatMember=e.target.value;render();return}
+  if(e.target.id==='mesel'){S.me=e.target.value;const u=me();u.ultimo=Date.now();if(u.papel!=='admin'&&view.tab==='usuarios')view.tab='painel';render();toast('Vendo como '+u.nome+', '+PAPEL[u.papel]);return}
+  const uid2=e.target.dataset&&e.target.dataset.papel;
+  if(uid2){const u=S.users.find(x=>x.id===uid2);if(!u)return;
+    if(me().papel!=='admin'){render();toast('Só administradores podem fazer isso');return}
+    if(u.papel==='admin'&&u.ativo&&adminsAtivos()===1&&e.target.value!=='admin'){render();toast('Precisa existir pelo menos um administrador ativo');return}
+    u.papel=e.target.value;render();toast(u.nome+' agora é '+PAPEL[u.papel])}
+});
+document.addEventListener('input',e=>{
+  if(loginSt.marca==='bad'&&!travaSeg()&&e.target.closest('.login-box'))marcaLogin('');
+  if(e.target.classList.contains('otp')){const cx=Array.from(document.querySelectorAll('.otp'));const i=cx.indexOf(e.target);
+    const d=soDig(e.target.value);e.target.value=d.slice(0,1);
+    if(d&&cx[i+1])cx[i+1].focus();
+    if(cx.every(c=>c.value))document.getElementById('codeform').requestSubmit();return}
+  const b=e.target.dataset&&e.target.dataset.bind;
+  if(b&&draft){draft[b]=e.target.value;const err=document.getElementById('ferr');if(err)err.textContent='';updDraft();return}
+  if(e.target.id==='buscaMembro'){view.buscaMembro=e.target.value;const pos=e.target.selectionStart;render();const i=document.getElementById('buscaMembro');i.focus();i.setSelectionRange(pos,pos)}
+});
+document.addEventListener('submit',e=>{
+  e.preventDefault();
+  if(e.target.id==='loginform'){if(travaSeg()>0)return;const L=loginSt;L.aviso='';
+    L.email=document.getElementById('lemail').value.trim();const senha=document.getElementById('lsenha').value;
+    const u=S.users.find(x=>x.ativo&&x.email.toLowerCase()===L.email.toLowerCase());
+    /* a mensagem é a mesma para e-mail e para senha errados, de propósito */
+    if(!u||senha!==DEMO_SENHA){L.falhas++;L.erro='E-mail ou senha incorretos.';L.marca='bad';if(L.falhas>=5){L.falhas=0;L.trava=Date.now()+30000}render();return}
+    L.uid=u.id;L.passo=2;L.erro='';L.marca='';render();return}
+  if(e.target.id==='codeform'){if(loginSt.entrando)return;const cod=Array.from(document.querySelectorAll('.otp')).map(c=>c.value).join('');
+    if(!/^\d{6}$/.test(cod)){document.getElementById('lerr').textContent='Digite os 6 dígitos do código.';marcaLogin('bad');return}
+    if(cod!==DEMO_COD){const L=loginSt;L.falhas++;
+      if(L.falhas>=5){L.falhas=0;L.trava=Date.now()+30000;L.passo=1;L.erro='';L.marca='bad';render();return}
+      document.getElementById('lerr').textContent='Código incorreto.';marcaLogin('bad');
+      const cx=document.querySelectorAll('.otp');cx.forEach(c=>c.value='');cx[0].focus();return}
+    /* ingresso fica verde, o traço se refaz e só então o painel abre */
+    loginSt.entrando=true;document.getElementById('lerr').textContent='';marcaLogin('ok');
+    e.target.querySelectorAll('input,button').forEach(el=>el.disabled=true);e.target.querySelector('[type=submit]').textContent='Entrando';
+    setTimeout(()=>{sessao=loginSt.uid;S.me=sessao;sessGravar(sessao);me().ultimo=Date.now();ultAtiv=Date.now();reg('Entrou no painel');loginSt=LOGIN0();view=VIEW0();render()},1150);return}
+  if(e.target.id==='chatform'){const i=document.getElementById('chatin');const v=i.value.trim();if(!v)return;processar(view.chatMember,v);render();const n=document.getElementById('chatin');if(n)n.focus();return}
+  const papel=me().papel;
+  if(papel!=='admin'&&FORM_SO_ADMIN.has(e.target.id)){toast('Só administradores podem fazer isso');return}
+  if(papel==='leitura'){toast('Seu perfil é só de leitura');return}
+  if(e.target.id==='userform'){const f=new FormData(e.target);const nome=String(f.get('nome')||'').trim();const email=String(f.get('email')||'').trim().toLowerCase();const err=document.getElementById('uerr');
+    if(!nome){err.textContent='Informe o nome.';return}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent='Informe um e-mail válido.';return}
+    if(S.users.some(u=>u.email.toLowerCase()===email)){err.textContent='Já existe um usuário com esse e-mail.';return}
+    S.users.push({id:'u'+uid(),nome,email,papel:PAPEL[f.get('papel')]?f.get('papel'):'leitura',ativo:true,ultimo:null});
+    view.addUser=false;render();toast('Convite enviado para '+email);return}
+  if(e.target.id==='cfgform'){
+    const f=new FormData(e.target);const num=k=>Number(f.get(k));const txt=k=>String(f.get(k)||'').trim();
+    const falha=m=>{document.getElementById('cerr').textContent=m;window.scrollTo(0,0)};
+    const nums=['resposta','checkin','bonus','falta','prazo','nm0','nm1','antes','depois','horas'];
+    if(nums.some(k=>f.get(k)===''||!Number.isInteger(num(k))||num(k)<0)){falha('Preencha todos os números com valores inteiros, sem sinal.');return}
+    if(!(num('nm0')>num('nm1')&&num('nm1')>0)){falha('O nível 3 precisa de mais pontos que o nível 2, e o nível 2 precisa ser maior que zero.');return}
+    if(['nn0','nn1','nn2','convite','cobranca','lembrete'].some(k=>!txt(k))){falha('Os nomes dos níveis e os textos das mensagens não podem ficar vazios.');return}
+    S.cfg=Object.assign({},S.cfg,{pts:{resposta:num('resposta'),checkin:num('checkin'),bonus:num('bonus'),falta:-num('falta')},prazo:num('prazo'),
+      niv:[{n:txt('nn0'),min:num('nm0'),ben:txt('nb0')},{n:txt('nn1'),min:num('nm1'),ben:txt('nb1')},{n:txt('nn2'),min:0,ben:txt('nb2')}],
+      extras:[0,1,2,3].map(i=>({nome:txt('xn'+i),pts:num('xp'+i)})).filter(x=>x.nome&&x.pts>0),
+      temporada:txt('temporada')==='ano'?'ano':'semestre',qrRot:!!f.get('qrRot'),pos:!!f.get('pos'),custo:num('custo')>=0?num('custo'):S.cfg.custo,
+      ci:{antes:num('antes'),depois:num('depois')},lembrete:{ativo:!!f.get('lembAtivo'),horas:num('horas')},
+      msg:{convite:txt('convite'),cobranca:txt('cobranca'),lembrete:txt('lembrete'),pos:txt('pos')||S.cfg.msg.pos,falta:txt('mfalta')||S.cfg.msg.falta}});
+    applyCfg();render();toast('Regras salvas');return}
+  if(e.target.id==='memberform'){const m=member(view.drawer);if(!m)return;const f=new FormData(e.target);const nome=String(f.get('nome')||'').trim();const tel=String(f.get('tel')||'').trim();if(!nome||!tel)return;
+    const tags=String(f.get('tags')||'').split(',').map(s=>s.trim()).filter(Boolean);
+    Object.assign(m,{nome,telefone:tel,cargo:String(f.get('cargo')||'').trim()||'Membro',empresa:String(f.get('emp')||'').trim()||'Sem empresa',tags:tags.length?tags:['Sem turma'],optin:!!f.get('optin')});
+    view.editMember=false;render();toast('Dados de '+primeiro(nome)+' atualizados');return}
+  if(e.target.id==='ajusteform'){const m=member(view.drawer);if(!m)return;const f=new FormData(e.target);const v=Number(f.get('v'));const motivo=String(f.get('motivo')||'').trim();
+    if(!Number.isInteger(v)||v===0||!motivo){document.getElementById('aerr').textContent='Informe um número inteiro diferente de zero e o motivo.';return}
+    lanc(m.id,null,'ajuste',v,'Ajuste manual: '+motivo);render();toast((v>0?'+':'')+v+' pontos para '+primeiro(m.nome));return}
+  if(e.target.id==='eventform'){const ev=evento(view.eventId);if(!ev)return;const f=new FormData(e.target);const g=k=>String(f.get(k)||'').trim();
+    if(!g('nome')||!g('data')||!g('hora')||!g('local'))return;
+    const mudou=ev.data!==g('data')||ev.hora!==g('hora')||ev.local!==g('local');
+    Object.assign(ev,{nome:g('nome'),data:g('data'),hora:g('hora'),local:g('local'),descricao:g('descricao')});
+    let n=0;if(mudou&&f.get('avisar')&&ev.status==='aberto')Object.keys(ev.convidados).forEach(mid=>{const i=ev.convidados[mid];const m=member(mid);if(m&&m.optin&&i.status!=='recusado'){pushChat(mid,{from:'bot',text:'Atenção: o '+ev.nome+' mudou. Agora é em '+fmtData(ev.data)+' às '+ev.hora+', '+ev.local+'.'});n++}});
+    view.editEvent=false;render();toast(n?'Evento atualizado e '+pl(n,'convidado avisado','convidados avisados'):'Evento atualizado');return}
+  if(e.target.id==='addform'){const f=new FormData(e.target);const nome=String(f.get('nome')||'').trim();const tel=String(f.get('tel')||'').trim();if(!nome||!tel)return;
+    const tags=String(f.get('tags')||'').split(',').map(s=>s.trim()).filter(Boolean);
+    S.members.push({id:'m'+uid(),nome,telefone:tel,empresa:String(f.get('emp')||'').trim()||'Sem empresa',cargo:'Membro',tags:tags.length?tags:['Sem turma'],optin:!!f.get('optin')});
+    view.addMember=false;render();toast(nome+' adicionado')}
+});
+document.addEventListener('keydown',e=>{if(e.key!=='Backspace'||!e.target.classList||!e.target.classList.contains('otp')||e.target.value)return;
+  const cx=Array.from(document.querySelectorAll('.otp'));const p=cx[cx.indexOf(e.target)-1];if(p){p.value='';p.focus()}});
+document.addEventListener('paste',e=>{if(!e.target.classList||!e.target.classList.contains('otp'))return;e.preventDefault();
+  const d=soDig(e.clipboardData.getData('text')).slice(0,6);const cx=Array.from(document.querySelectorAll('.otp'));
+  cx.forEach((c,i)=>c.value=d[i]||'');(cx[Math.min(d.length,5)]||cx[0]).focus();
+  if(d.length===6)document.getElementById('codeform').requestSubmit()});
+['click','keydown','input'].forEach(t=>document.addEventListener(t,()=>{ultAtiv=Date.now()},true));
+setInterval(()=>{
+  if(sessao&&Date.now()-ultAtiv>INATIVO){sair('Sessão encerrada por inatividade. Entre de novo para continuar.');return}
+  if(!sessao&&loginSt.trava){if(travaSeg()>0){const el=document.getElementById('lerr');if(el)el.textContent='Muitas tentativas. Aguarde '+travaSeg()+' s para tentar de novo.'}else{loginSt.trava=0;loginSt.erro='';loginSt.marca='';render()}}
+},1000);
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(view.telao){view.telao=null;render()}else if(view.drawer){view.drawer=null;render()}});
+
+S=load();if(!S)seed();
+if(!S.cfg)S.cfg=CFG0();
+if(!S.users){S.users=USERS0();S.me='u1'}
+applyCfg();
+{const s0=sessLer();sessao=s0&&S.users.some(u=>u.id===s0&&u.ativo)?s0:null}
+render();
+</script>
+</body>
+</html>

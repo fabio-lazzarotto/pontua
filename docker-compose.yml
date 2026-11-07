@@ -1,0 +1,26 @@
+# Sobe o PostgreSQL com o modelo de dados e os dados de exemplo.
+# Uso: copie .env.example para .env e rode "docker compose up -d".
+# Os scripts em db/ rodam só na primeira vez (volume vazio). Para recriar: "docker compose down -v".
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pontua}
+      POSTGRES_USER: ${POSTGRES_USER:-pontua}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pontua}
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - dados:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  dados:

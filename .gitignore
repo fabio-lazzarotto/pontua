@@ -1,0 +1,15 @@
+# Sistema e editor
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+*.log
+
+# Segredos e dependências
+.env
+.env.*
+!.env.example
+node_modules/
+__pycache__/
+.venv/
